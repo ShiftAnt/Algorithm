@@ -1,71 +1,66 @@
 import java.io.*
 
-fun calDif(a: Int, b: Int) = when (a) {
-	-1 -> 0
-	1 -> 3
-	else -> when (b) {
-		-1 -> 1
-		1 -> 2
-		else -> 4
-	}
+var n = 0
+var m = 0
+var djs = arrayOf<IntArray>()
+var Q = intArrayOf()
+var P = arrayOf<IntArray>()
+
+fun rot(a: Int, set: Int = -1): Int {
+    var cur = a
+
+    while (djs[cur][0] != cur) {
+        val tmp = cur
+        cur = djs[cur][0]
+        if (set != -1) djs[tmp][0] = set
+    }
+    if (set != -1) djs[cur][0] = set
+    return cur
 }
-val dr = arrayOf(-1, 0, 0, 1)
-val dc = arrayOf(0, -1, 1, 0)
+
+fun merge(a: Int, b: Int) {
+    var y = rot(a)
+    var x = rot(b)
+    if (djs[y][1] < djs[x][1]) {
+        y = x.also { x = y }
+    }
+    rot(a, y)
+    rot(b, y)
+    djs[y][1] += djs[x][1]
+}
+
 fun main() {
-	val br = BufferedReader(InputStreamReader(System.`in`))
-	val bw = BufferedWriter(OutputStreamWriter(System.out))
+    val br = BufferedReader(InputStreamReader(System.`in`))
+    val bw = BufferedWriter(OutputStreamWriter(System.out))
 
-	val (N, K, R) = br.readLine().split(" ").map { it.toInt() }
+    n = br.readLine().toInt()
+    m = br.readLine().toInt()
+    djs = Array(n) {IntArray(2)}
+    P = Array(n) { IntArray(n) }
+    repeat(n) {
+        djs[it][0] = it
+        djs[it][1] = 1
+        P[it] = br.readLine().split(" ").map { it.toInt() }.toIntArray()
+    }
 
-	val P = Array(N) { IntArray(N) }
+    Q = br.readLine().split(" ").map { it.toInt() - 1 }.toIntArray()
 
-	repeat(R) {
-		val a = br.readLine().split(" ").map { it.toInt() - 1 }
-		P[a[0]][a[1]] += 1.shl(calDif(a[2] - a[0], a[3] - a[1]))
-		P[a[2]][a[3]] += 1.shl(calDif(a[0] - a[2], a[1] - a[3]))
-	}
-	repeat(K) {
-		val a = br.readLine().split(" ").map { it.toInt() - 1 }
-
-		P[a[0]][a[1]] += 1.shl(4)
-	}
-
-	val vstd = Array(N) {BooleanArray(N)}
-	val al = ArrayList<Int>()
-	for (i in 0 until N) {
-		for (j in 0 until N) {
-			if (!vstd[i][j]) {
-				val que = ArrayDeque<Pair<Int, Int>>()
-				que += i to j
-				var cnt = 0
-				vstd[i][j] = true
-				while (que.isNotEmpty()) {
-					val cur = que.removeFirst()
-					if (P[cur.first][cur.second].and(1.shl(4)) != 0) ++cnt
-					for (k in 0 until 4) {
-						val y = cur.first + dr[k]
-						val x = cur.second + dc[k]
-
-						if (y in 0 until N && x in 0 until N && !vstd[y][x] && P[cur.first][cur.second].and(1.shl(k)) == 0) {
-							vstd[y][x] = true
-							que.add(y to x)
-						}
-					}
-				}
-				al.add(cnt)
-			}
-		}
-	}
-	var ret = 0
-	var tmp = K
-	for (a in al) {
-		tmp -= a
-		ret += tmp * a
-	}
-
-	bw.write("$ret\n")
-
-
-	bw.close()
-	br.close()
+    for (i in 0 until n) {
+        for (j in i + 1 until n) {
+            if (P[i][j] == 1) {
+                merge(i, j)
+            }
+        }
+    }
+    val stt = rot(Q[0])
+    var isC = true
+    for (i in 1 until m) {
+        if (stt != rot(Q[i])) {
+            isC = false
+            break
+        }
+    }
+    bw.write(if (isC) "YES" else "NO")
+    bw.close()
+    br.close()
 }
