@@ -1,66 +1,70 @@
 import java.io.*
 
 var n = 0
-var m = 0
-var djs = arrayOf<IntArray>()
-var Q = intArrayOf()
-var P = arrayOf<IntArray>()
+var q = 0
+val al = Array(6) {ArrayList<String>()}
 
-fun rot(a: Int, set: Int = -1): Int {
-    var cur = a
+fun last(cur: ArrayList<String>, a: String): Int {
+	var s = 0
+	var e = cur.size - 1
 
-    while (djs[cur][0] != cur) {
-        val tmp = cur
-        cur = djs[cur][0]
-        if (set != -1) djs[tmp][0] = set
-    }
-    if (set != -1) djs[cur][0] = set
-    return cur
+	while (s <= e) {
+		val mid = (s + e) / 2
+		if (cur[mid] <= a) {
+			if (mid == cur.size - 1 || cur[mid + 1] > a) return mid
+			s = mid + 1
+		} else e = mid - 1
+	}
+	return -1
 }
 
-fun merge(a: Int, b: Int) {
-    var y = rot(a)
-    var x = rot(b)
-    if (djs[y][1] < djs[x][1]) {
-        y = x.also { x = y }
-    }
-    rot(a, y)
-    rot(b, y)
-    djs[y][1] += djs[x][1]
+fun least(cur: ArrayList<String>, a: String): Int {
+	var s = 0
+	var e = cur.size - 1
+
+	while (s <= e) {
+		val mid = (s + e) / 2
+		if (cur[mid] >= a) {
+			if (mid == 0 || cur[mid - 1] < a) return mid
+			e = mid - 1
+		} else {
+			s = mid + 1
+		}
+	}
+	return -1
+}
+
+fun fnd(stt: String, end: String, lv: Int): Int {
+	var ret = 0
+	for (t in lv - 1 until 6) {
+		val si = least(al[t], stt)
+		ret += if (si == -1) 0 else last(al[t], end) - si + 1
+	}
+	return ret
 }
 
 fun main() {
-    val br = BufferedReader(InputStreamReader(System.`in`))
-    val bw = BufferedWriter(OutputStreamWriter(System.out))
+	val br = BufferedReader(InputStreamReader(System.`in`))
+	val bw = BufferedWriter(OutputStreamWriter(System.out))
 
-    n = br.readLine().toInt()
-    m = br.readLine().toInt()
-    djs = Array(n) {IntArray(2)}
-    P = Array(n) { IntArray(n) }
-    repeat(n) {
-        djs[it][0] = it
-        djs[it][1] = 1
-        P[it] = br.readLine().split(" ").map { it.toInt() }.toIntArray()
-    }
+	br.readLine().split(" ").map { it.toInt() }.let {
+		n = it[0]
+		q = it[1]
+	}
+	repeat(n) {
+		br.readLine().split("#").let {
+			al[it[1].toInt() - 1] += it[0]
+		}
+	}
+	repeat(6) {
+		al[it].sort()
+	}
 
-    Q = br.readLine().split(" ").map { it.toInt() - 1 }.toIntArray()
-
-    for (i in 0 until n) {
-        for (j in i + 1 until n) {
-            if (P[i][j] == 1) {
-                merge(i, j)
-            }
-        }
-    }
-    val stt = rot(Q[0])
-    var isC = true
-    for (i in 1 until m) {
-        if (stt != rot(Q[i])) {
-            isC = false
-            break
-        }
-    }
-    bw.write(if (isC) "YES" else "NO")
-    bw.close()
-    br.close()
+	repeat(q) {
+		br.readLine().split("#").let {
+			bw.write("${fnd(it[0], it[1], it[2].toInt())}\n")
+		}
+	}
+	bw.close()
+	br.close()
 }
