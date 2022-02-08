@@ -1,70 +1,59 @@
 import java.io.*
+import kotlin.math.max
 
-val dr = arrayOf(1, 0, -1, 0)
-val dc = arrayOf(0, 1, 0, -1)
+var n = 0
+var m = 0
+var P = arrayOf<IntArray>()
+var ret = 0
+
+fun range(y: Int, x: Int) = y in 0 until n && x in 0 until m && P[y][x] != 0
+
+fun check(y: Int, x: Int, sy: Int, sx: Int, ey: Int, ex: Int, sum: Int) {
+	if (range(sy, sx) && range(ey, ex)) {
+		val tmp = arrayOf(P[y][x], P[sy][sx], P[ey][ex])
+		P[y][x] = 0
+		P[sy][sx] = 0
+		P[ey][ex] = 0
+		dfs(y * m + x + 1, sum + tmp[0] * 2 + tmp[1] + tmp[2])
+		P[y][x] = tmp[0]
+		P[sy][sx] = tmp[1]
+		P[ey][ex] = tmp[2]
+	}
+}
+
+fun dfs(idx: Int, sum: Int) {
+	if (idx == n * m) {
+		ret = max(ret, sum)
+		return
+	}
+	val y = idx / m
+	val x = idx % m
+
+	if (P[y][x] != 0) {
+		check(y, x, y - 1, x, y, x - 1, sum)
+		check(y, x, y - 1, x, y, x + 1, sum)
+		check(y, x, y + 1, x, y, x - 1, sum)
+		check(y, x, y + 1, x, y, x + 1, sum)
+	}
+
+	dfs(idx + 1, sum)
+}
+
 fun main() {
 	val br = BufferedReader(InputStreamReader(System.`in`))
 	val bw = BufferedWriter(OutputStreamWriter(System.out))
 
-	val (A, B) = br.readLine().split(" ").map { it.toInt() }
-
-	val (N, M) = br.readLine().split(" ").map { it.toInt() }
-
-	val P = Array(B) {IntArray(A)}
-	val rbt = ArrayList<Pair<Int, Int>>()
-	repeat(N) {
-		val cur = br.readLine().split(" ")
-		val y = cur[1].toInt() - 1
-		val x = cur[0].toInt() - 1
-
-		P[y][x] = when (cur[2]) {
-			"N" -> 1
-			"E" -> 2
-			"S" -> 3
-			else -> 4
-		}
-		rbt.add(y to x)
+	br.readLine().split(" ").map { it.toInt() }.let {
+		n = it[0]
+		m = it[1]
 	}
-	var ret = "OK"
+	P = Array(n) { IntArray(0) }
 
-	for (i in 0 until M) {
-		val cur = br.readLine().split(" ")
-		if (ret != "OK") continue
-		val k = cur[0].toInt() - 1
-
-		loop@
-		for (rpt in 0 until cur[2].toInt()) {
-			val y = rbt[k].first
-			val x = rbt[k].second
-			when (cur[1]) {
-				"L" -> P[y][x] = if (P[y][x] == 1) 4 else P[y][x] - 1
-				"R" -> P[y][x] = if (P[y][x] == 4) 1 else P[y][x] + 1
-				else -> {
-					val a = y + dr[P[y][x] - 1]
-					val b = x + dc[P[y][x] - 1]
-					if (a in 0 until B && b in 0 until A) {
-						if (P[a][b] != 0) {
-							for (rb in rbt.indices) {
-								if (rbt[rb].first == a && rbt[rb].second == b) {
-									ret ="Robot ${k + 1} crashes into robot ${rb + 1}"
-									break@loop
-								}
-							}
-						} else {
-							P[a][b] = P[y][x]
-							P[y][x] = 0
-							rbt[k] = a to b
-						}
-					} else {
-						ret = "Robot ${k + 1} crashes into the wall"
-						break@loop
-					}
-				}
-			}
-		}
-
+	repeat(n) {
+		P[it] = br.readLine().split(" ").map { it.toInt() }.toIntArray()
 	}
-	bw.write(ret)
+	dfs(0, 0)
+	bw.write("$ret\n")
 	bw.close()
 	br.close()
 }
