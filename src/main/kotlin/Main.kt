@@ -1,43 +1,54 @@
 import java.io.*
-import kotlin.math.max
+
+val dr = arrayOf(-1, 0, 0, 1)
+val dc = arrayOf(0, -1, 1, 0)
 
 fun main() {
 	val br = BufferedReader(InputStreamReader(System.`in`))
 	val bw = BufferedWriter(OutputStreamWriter(System.out))
 
-	val (m, n) = br.readLine().split(" ").map { it.toInt() }
+	val (R, C, N) = br.readLine().split(" ").map { it.toInt() }
 
-	val P = IntArray(2 * m - 1)
-	val ret = Array(m) {IntArray(m)}
-	repeat(m) {
-		ret[it].fill(1)
+	val P = Array(R) {IntArray(C)}
+
+	repeat(R) {
+		val tmp = br.readLine()
+		for (i in 0 until C) {
+			P[it][i] = -1
+			if (tmp[i] == 'O') P[it][i] = 0
+		}
 	}
-	for (i in 0 until n) {
-		var idx = 0
-		val inp = br.readLine().split(" ").map { it.toInt() }
-		for (j in 0 until 3) {
-			for (k in 0 until inp[j]) {
-				P[idx++] += j
+
+	for (tc in 2..N) {
+		if (tc % 2 == 0) {
+			for (i in 0 until R) {
+				for (j in 0 until C) {
+					if (P[i][j] == -1) P[i][j] = tc
+				}
+			}
+		} else {
+			for (i in 0 until R) {
+				for (j in 0 until C) {
+					if (P[i][j] == tc - 3) {
+						for (k in dr.indices) {
+							try {
+								val cur = P[i + dr[k]][j + dc[k]]
+								if (cur != P[i][j]) P[i + dr[k]][j + dc[k]] = -1
+							} catch (_: IndexOutOfBoundsException) {}
+						}
+						P[i][j] = -1
+					}
+				}
 			}
 		}
 	}
-	for (i in 0 until m) {
-		ret[m - 1 - i][0] += P[i]
-	}
-	for (i in m until 2 * m - 1) {
-		ret[0][i - m + 1] += P[i]
-	}
-	for (i in 1 until m) {
-		for (j in 1 until m) {
-			ret[i][j] = max(max(ret[i - 1][j - 1], ret[i][j - 1]), ret[i - 1][j])
-		}
-	}
-	for (i in 0 until m) {
-		for (j in 0 until m) {
-			bw.write("${ret[i][j]} ")
+	for (i in 0 until R) {
+		for (j in 0 until C) {
+			bw.write(if (P[i][j] == -1) "." else "O")
 		}
 		bw.write("\n")
 	}
+
 
 	bw.close()
 	br.close()
