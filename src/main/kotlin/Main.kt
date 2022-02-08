@@ -1,55 +1,70 @@
 import java.io.*
 
-val dr = arrayOf(-1, 0, 0, 1)
-val dc = arrayOf(0, -1, 1, 0)
-
+val dr = arrayOf(1, 0, -1, 0)
+val dc = arrayOf(0, 1, 0, -1)
 fun main() {
 	val br = BufferedReader(InputStreamReader(System.`in`))
 	val bw = BufferedWriter(OutputStreamWriter(System.out))
 
-	val (R, C, N) = br.readLine().split(" ").map { it.toInt() }
+	val (A, B) = br.readLine().split(" ").map { it.toInt() }
 
-	val P = Array(R) {IntArray(C)}
+	val (N, M) = br.readLine().split(" ").map { it.toInt() }
 
-	repeat(R) {
-		val tmp = br.readLine()
-		for (i in 0 until C) {
-			P[it][i] = -1
-			if (tmp[i] == 'O') P[it][i] = 0
+	val P = Array(B) {IntArray(A)}
+	val rbt = ArrayList<Pair<Int, Int>>()
+	repeat(N) {
+		val cur = br.readLine().split(" ")
+		val y = cur[1].toInt() - 1
+		val x = cur[0].toInt() - 1
+
+		P[y][x] = when (cur[2]) {
+			"N" -> 1
+			"E" -> 2
+			"S" -> 3
+			else -> 4
 		}
+		rbt.add(y to x)
 	}
+	var ret = "OK"
 
-	for (tc in 2..N) {
-		if (tc % 2 == 0) {
-			for (i in 0 until R) {
-				for (j in 0 until C) {
-					if (P[i][j] == -1) P[i][j] = tc
-				}
-			}
-		} else {
-			for (i in 0 until R) {
-				for (j in 0 until C) {
-					if (P[i][j] == tc - 3) {
-						for (k in dr.indices) {
-							try {
-								val cur = P[i + dr[k]][j + dc[k]]
-								if (cur != P[i][j]) P[i + dr[k]][j + dc[k]] = -1
-							} catch (_: IndexOutOfBoundsException) {}
+	for (i in 0 until M) {
+		val cur = br.readLine().split(" ")
+		if (ret != "OK") continue
+		val k = cur[0].toInt() - 1
+
+		loop@
+		for (rpt in 0 until cur[2].toInt()) {
+			val y = rbt[k].first
+			val x = rbt[k].second
+			when (cur[1]) {
+				"L" -> P[y][x] = if (P[y][x] == 1) 4 else P[y][x] - 1
+				"R" -> P[y][x] = if (P[y][x] == 4) 1 else P[y][x] + 1
+				else -> {
+					val a = y + dr[P[y][x] - 1]
+					val b = x + dc[P[y][x] - 1]
+					if (a in 0 until B && b in 0 until A) {
+						if (P[a][b] != 0) {
+							for (rb in rbt.indices) {
+								if (rbt[rb].first == a && rbt[rb].second == b) {
+									ret ="Robot ${k + 1} crashes into robot ${rb + 1}"
+									break@loop
+								}
+							}
+						} else {
+							P[a][b] = P[y][x]
+							P[y][x] = 0
+							rbt[k] = a to b
 						}
-						P[i][j] = -1
+					} else {
+						ret = "Robot ${k + 1} crashes into the wall"
+						break@loop
 					}
 				}
 			}
 		}
-	}
-	for (i in 0 until R) {
-		for (j in 0 until C) {
-			bw.write(if (P[i][j] == -1) "." else "O")
-		}
-		bw.write("\n")
-	}
 
-
+	}
+	bw.write(ret)
 	bw.close()
 	br.close()
 }
