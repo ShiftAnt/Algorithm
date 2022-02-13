@@ -1,61 +1,61 @@
 import java.io.*
+import java.util.TreeMap
 
-var n = 0
-var m = 0
-var P = arrayOf<IntArray>()
-var al = arrayOf<Array<ArrayList<Pair<Int, Int>>>>()
-val dr = arrayOf(-1, 0, 0, 1)
-val dc = arrayOf(0, -1, 1, 0)
-var ret = 1
+fun find(key: Int): Int {
+	if (tm[key] != null) return key
+	val c = tm.ceilingKey(key) ?: Int.MAX_VALUE
+	val f = tm.floorKey(key) ?: (Int.MIN_VALUE / 2)
+
+	if (c - key < key - f) {
+		if (c - key <= K) return c
+	} else if (c - key > key - f) {
+		if (key - f <= K) return f
+	} else if (c - key <= K) return -2
+	return -1
+}
+
+val tm = TreeMap<Int, Int>()
+var N = 0
+var M = 0
+var K = 0
 fun main() {
 	val br = BufferedReader(InputStreamReader(System.`in`))
 	val bw = BufferedWriter(OutputStreamWriter(System.out))
 
 	br.readLine().split(" ").map { it.toInt() }.let {
-		n = it[0]
-		m = it[1]
+		N = it[0]
+		M = it[1]
+		K = it[2]
 	}
-	P = Array(n) { IntArray(n) }
-	al = Array(n) {Array(n) { ArrayList() } }
-	P[0][0] = 2
-	repeat(m) {
-		br.readLine().split(" ").map { it.toInt() - 1 }.let {
-			al[it[0]][it[1]] += it[2] to it[3]
+
+
+	repeat(N) {
+		br.readLine().split(" ").map { it.toInt() }.let {
+			tm[it[0]] = it[1]
 		}
 	}
-	val que = ArrayDeque<Pair<Int, Int>>()
-	que += 0 to 0
-
-	while (!que.isEmpty()) {
-		val cur = que.removeFirst()
-
-		for (light in al[cur.first][cur.second]) {
-			if (P[light.first][light.second] == 0) {
-				++ret
-				P[light.first][light.second] = 1
-				for (i in dr.indices) {
-					val y = light.first + dr[i]
-					val x = light.second + dc[i]
-					if (y in 0 until n && x in 0 until n && P[y][x] == 2) {
-						que.add(light)
-						P[light.first][light.second] = 2
-						break
+	repeat(M) {
+		br.readLine().split(" ").map { it.toInt() }.let {
+			when (it[0]) {
+				1 -> tm[it[1]] = it[2]
+				2 -> {
+					val fnd = find(it[1])
+					if (fnd >= 0) tm[fnd] = it[2]
+				}
+				3 -> {
+					find(it[1]).apply {
+						val inp = when (this) {
+							-2 -> "?"
+							-1 -> "-1"
+							else -> "${tm[this]}"
+						}
+						bw.write("$inp\n")
 					}
 				}
 			}
 		}
-
-		for (i in dr.indices) {
-			val y = cur.first + dr[i]
-			val x = cur.second + dc[i]
-			if (y in 0 until n && x in 0 until n && P[y][x] == 1) {
-				P[y][x] = 2
-				que.add(y to x)
-			}
-		}
 	}
 
-	bw.write("$ret")
 	bw.close()
 	br.close()
 }
