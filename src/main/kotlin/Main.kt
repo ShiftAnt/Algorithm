@@ -1,61 +1,34 @@
-import java.io.*
-import java.util.TreeMap
+import java.util.*
+import kotlin.math.*
 
-fun find(key: Int): Int {
-	if (tm[key] != null) return key
-	val c = tm.ceilingKey(key) ?: Int.MAX_VALUE
-	val f = tm.floorKey(key) ?: (Int.MIN_VALUE / 2)
-
-	if (c - key < key - f) {
-		if (c - key <= K) return c
-	} else if (c - key > key - f) {
-		if (key - f <= K) return f
-	} else if (c - key <= K) return -2
-	return -1
-}
-
-val tm = TreeMap<Int, Int>()
-var N = 0
-var M = 0
-var K = 0
 fun main() {
-	val br = BufferedReader(InputStreamReader(System.`in`))
-	val bw = BufferedWriter(OutputStreamWriter(System.out))
+	val sc = Scanner(System.`in`)
+	val n = sc.nextInt()
+	val P = IntArray(n)
 
-	br.readLine().split(" ").map { it.toInt() }.let {
-		N = it[0]
-		M = it[1]
-		K = it[2]
+	repeat(n) {
+		P[it] = sc.nextInt()
 	}
 
+	val dp = Array(n) {IntArray(2)}
+	dp[0][0] = 1
 
-	repeat(N) {
-		br.readLine().split(" ").map { it.toInt() }.let {
-			tm[it[0]] = it[1]
-		}
-	}
-	repeat(M) {
-		br.readLine().split(" ").map { it.toInt() }.let {
-			when (it[0]) {
-				1 -> tm[it[1]] = it[2]
-				2 -> {
-					val fnd = find(it[1])
-					if (fnd >= 0) tm[fnd] = it[2]
-				}
-				3 -> {
-					find(it[1]).apply {
-						val inp = when (this) {
-							-2 -> "?"
-							-1 -> "-1"
-							else -> "${tm[this]}"
-						}
-						bw.write("$inp\n")
-					}
-				}
-			}
+	for (i in 1 until n) {
+		dp[i][0] = 1
+		for (j in i - 1 downTo 0) {
+			if (P[i] < P[j]) dp[i][0] = max(dp[i][0], dp[j][0] + 1)
 		}
 	}
 
-	bw.close()
-	br.close()
+	for (i in n - 2 downTo 0) {
+		for (j in i + 1 until n) {
+			if (P[i] < P[j]) dp[i][1] = max(dp[i][1], dp[j][1] + 1)
+		}
+	}
+	var ret = 0
+
+	for (i in 0 until n) {
+		ret = max(ret, dp[i][0] + dp[i][1])
+	}
+	print("$ret\n")
 }
