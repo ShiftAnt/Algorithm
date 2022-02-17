@@ -1,48 +1,45 @@
 import java.io.*
+import kotlin.math.*
 
+const val INF = Long.MAX_VALUE / 2
 fun main() {
 	val br = BufferedReader(InputStreamReader(System.`in`))
 	val bw = BufferedWriter(OutputStreamWriter(System.out))
 
-	while (true) {
-		val n = br.readLine().toInt()
-		if (n == 0) break
-		val P = ArrayList<Pair<String, Int>>()
-		val nxts = Array(n) {ArrayList<Int>()}
-		repeat(n) { tc ->
-			br.readLine().split(" ").let {
-				P += it[0] to it[1].toInt()
-				for (i in 2 until it.size - 1) {
-					nxts[tc] += it[i].toInt() - 1
-				}
+	val (n, m) = br.readLine().split(" ").map { it.toInt() }
+
+	val al = Array(m) { intArrayOf() }
+
+	repeat(m) {
+		al[it] = br.readLine().split(" ").mapIndexed {index, s ->
+			if (index < 2) s.toInt() - 1 else s.toInt()
+		}.toIntArray()
+	}
+
+	val P = LongArray(n)
+	P.fill(INF)
+	P[0] = 0
+
+	for (i in 0 until n) {
+		for (cur in al) {
+			if (P[cur[0]] != INF) {
+				P[cur[1]] = min(P[cur[1]], P[cur[0]] + cur[2])
 			}
 		}
-		val vstd = IntArray(n)
-		vstd.fill(-1)
-		var ret = "No"
-		val que = ArrayDeque<Pair<Int, Int>>()
-		que += 0 to 0
-		vstd[0] = 0
-		while (!que.isEmpty()) {
-			val cur = que.removeFirst()
-			val money = when (P[cur.first].first) {
-				"L" -> if (cur.second < P[cur.first].second) P[cur.first].second else cur.second
-				"T" -> cur.second - P[cur.first].second
-				else -> cur.second
-			}
-			if (money < 0) continue
-			if (cur.first == n - 1) {
-				ret = "Yes"
-				break
-			}
-			for (nxt in nxts[cur.first]) {
-				if (vstd[nxt] < money) {
-					vstd[nxt] = money
-					que += nxt to money
-				}
-			}
+	}
+	var isINF = false
+	for (cur in al) {
+		if (P[cur[0]] != INF && P[cur[1]] > P[cur[0]] + cur[2]) {
+			isINF = true
+			break
 		}
-		bw.write("$ret\n")
+	}
+	if (isINF) {
+		bw.write("-1\n")
+	} else {
+		for (i in 1 until n) {
+			bw.write("${if (P[i] == INF) -1 else P[i]}\n")
+		}
 	}
 
 	bw.close()
