@@ -1,47 +1,31 @@
 import java.io.*
-
-var n = 0
-var r = 0
-var q = 0
-var al = arrayOf<ArrayList<Int>>()
-val queries = ArrayList<Int>()
-var P = intArrayOf()
-
-fun dfs(idx: Int): Int {
-	P[idx] = 1
-
-	for (nxt in al[idx]) {
-		if (P[nxt] == 0) {
-			P[idx] += dfs(nxt)
-		}
-	}
-	return P[idx]
-}
+import kotlin.math.*
 
 fun main() {
 	val br = BufferedReader(InputStreamReader(System.`in`))
 	val bw = BufferedWriter(OutputStreamWriter(System.out))
 
-	br.readLine().split(" ").map { it.toInt() }.let {
-		n = it[0]
-		r = it[1]
-		q = it[2]
-	}
-	al = Array(n) {ArrayList()}
-	P = IntArray(n)
-	repeat(n - 1) {
-		val (a, b) = br.readLine().split(" ").map { it.toInt() - 1 }
-		al[a].add(b)
-		al[b].add(a)
-	}
-	repeat(q) {
-		queries.add(br.readLine().toInt() - 1)
-	}
+	for (tc in 0 until br.readLine().toInt()) {
+		val n = br.readLine().toInt()
+		val P = br.readLine().split(" ").map { it.toInt() }.toIntArray()
+		val dp = Array(n) {IntArray(n)}
+		for (i in 1 until n) {
+			P[i] += P[i - 1]
+		}
+		repeat(n) {
+			dp[it].fill(Int.MAX_VALUE)
+			dp[it][it] = 0
+		}
+		for (i in 2..n) {
+			for (j in 0 until n - i + 1) {
+				for (m in j until j + i - 1) {
+					dp[j][j + i - 1] = min(dp[j][j + i - 1],
+						dp[j][m] + dp[m + 1][j + i - 1] + P[j + i - 1] - if (j != 0) P[j - 1] else 0)
+				}
+			}
+		}
+		bw.write("${dp[0][n - 1]}\n")
 
-	dfs(r - 1)
-
-	repeat(q) {
-		bw.write("${P[queries[it]]}\n")
 	}
 
 	bw.close()
