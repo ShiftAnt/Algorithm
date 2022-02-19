@@ -1,33 +1,49 @@
 import java.io.*
-import kotlin.math.*
 
-var n = 0L
-var k = 0
+var n = 0
+var r = 0
 var q = 0
+var al = arrayOf<ArrayList<Int>>()
+val queries = ArrayList<Int>()
+var P = intArrayOf()
 
-fun parent(num: Long) = (num + k - 2) / k
+fun dfs(idx: Int): Int {
+	P[idx] = 1
+
+	for (nxt in al[idx]) {
+		if (P[nxt] == 0) {
+			P[idx] += dfs(nxt)
+		}
+	}
+	return P[idx]
+}
 
 fun main() {
 	val br = BufferedReader(InputStreamReader(System.`in`))
 	val bw = BufferedWriter(OutputStreamWriter(System.out))
-	br.readLine().split(" ").map { it.toLong() }.let {
+
+	br.readLine().split(" ").map { it.toInt() }.let {
 		n = it[0]
-		k = it[1].toInt()
-		q = it[2].toInt()
+		r = it[1]
+		q = it[2]
+	}
+	al = Array(n) {ArrayList()}
+	P = IntArray(n)
+	repeat(n - 1) {
+		val (a, b) = br.readLine().split(" ").map { it.toInt() - 1 }
+		al[a].add(b)
+		al[b].add(a)
+	}
+	repeat(q) {
+		queries.add(br.readLine().toInt() - 1)
 	}
 
-	for (i in 0 until q) {
-		var (a, b) = br.readLine().split(" ").map { it.toLong() }
-		var ret = 0
-		if (k == 1) {
-			bw.write("${abs(a - b)}\n")
-			continue
-		}
-		while (a != b) {
-			if (a > b) a = parent(a) else b = parent(b)
-			++ret
-		}
-		bw.write("$ret\n")
+	dfs(r - 1)
+
+	repeat(q) {
+		bw.write("${P[queries[it]]}\n")
 	}
+
 	bw.close()
+	br.close()
 }
