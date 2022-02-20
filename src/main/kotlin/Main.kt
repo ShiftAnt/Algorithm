@@ -1,33 +1,32 @@
-import java.io.*
+import java.util.*
 import kotlin.math.*
 
-fun main() {
-	val br = BufferedReader(InputStreamReader(System.`in`))
-	val bw = BufferedWriter(OutputStreamWriter(System.out))
+var P = LongArray(8)
 
-	for (tc in 0 until br.readLine().toInt()) {
-		val n = br.readLine().toInt()
-		val P = br.readLine().split(" ").map { it.toInt() }.toIntArray()
-		val dp = Array(n) {IntArray(n)}
-		for (i in 1 until n) {
-			P[i] += P[i - 1]
-		}
-		repeat(n) {
-			dp[it].fill(Int.MAX_VALUE)
-			dp[it][it] = 0
-		}
-		for (i in 2..n) {
-			for (j in 0 until n - i + 1) {
-				for (m in j until j + i - 1) {
-					dp[j][j + i - 1] = min(dp[j][j + i - 1],
-						dp[j][m] + dp[m + 1][j + i - 1] + P[j + i - 1] - if (j != 0) P[j - 1] else 0)
-				}
-			}
-		}
-		bw.write("${dp[0][n - 1]}\n")
+fun check(): Int {
+	val a = (P[0] - P[2]) * (P[5] - P[7]) - (P[1] - P[3]) * (P[4] - P[6])
+	val b = (P[0] * P[3] - P[1] * P[2]) * (P[4] - P[6]) - (P[0] - P[2]) * (P[4] * P[7] - P[5] * P[6])
+	val c = (P[0] * P[3] - P[1] * P[2]) * (P[5] - P[7]) - (P[1] - P[3]) * (P[4] * P[7] - P[5] * P[6])
 
+	if (a == 0L) return 0
+
+	repeat(8) {
+		P[it] *= a
 	}
 
-	bw.close()
-	br.close()
+	if (b == P[0] && c == P[1] || b == P[2] && c == P[3] || b == P[4] && c == P[5] || b == P[6] && c == P[7]) return 0
+
+	val rx = min(P[0], P[2])..max(P[0], P[2])
+	val ry = min(P[1], P[3])..max(P[1], P[3])
+
+	if (b in rx && c in ry) return 1
+	return 0
+}
+
+fun main() {
+	val sc = Scanner(System.`in`)
+	repeat(8) {
+		P[it] = sc.nextLong()
+	}
+	print("${check()}")
 }
