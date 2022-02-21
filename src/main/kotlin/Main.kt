@@ -1,32 +1,39 @@
-import java.util.*
+import java.io.*
 import kotlin.math.*
 
-var P = LongArray(8)
-
-fun check(): Int {
-	val a = (P[0] - P[2]) * (P[5] - P[7]) - (P[1] - P[3]) * (P[4] - P[6])
-	val b = (P[0] * P[3] - P[1] * P[2]) * (P[4] - P[6]) - (P[0] - P[2]) * (P[4] * P[7] - P[5] * P[6])
-	val c = (P[0] * P[3] - P[1] * P[2]) * (P[5] - P[7]) - (P[1] - P[3]) * (P[4] * P[7] - P[5] * P[6])
-
-	if (a == 0L) return 0
-
-	repeat(8) {
-		P[it] *= a
-	}
-
-	if (b == P[0] && c == P[1] || b == P[2] && c == P[3] || b == P[4] && c == P[5] || b == P[6] && c == P[7]) return 0
-
-	val rx = min(P[0], P[2])..max(P[0], P[2])
-	val ry = min(P[1], P[3])..max(P[1], P[3])
-
-	if (b in rx && c in ry) return 1
-	return 0
-}
-
+const val INF = Int.MAX_VALUE / 2
 fun main() {
-	val sc = Scanner(System.`in`)
-	repeat(8) {
-		P[it] = sc.nextLong()
+	val br = BufferedReader(InputStreamReader(System.`in`))
+	val bw = BufferedWriter(OutputStreamWriter(System.out))
+
+	val (v, e) = br.readLine().split(" ").map { it.toInt() }
+
+	val P = Array(v) {Array(v) {INF} }
+	repeat(v) {
+		P[it][it] = 0
 	}
-	print("${check()}")
+	repeat(e) {
+		br.readLine().split(" ").map { it.toInt() - 1 }.let {
+			P[it[0]][it[1]] = it[2] + 1
+		}
+	}
+
+	for (i in 0 until v) {
+		for (j in 0 until v) {
+			for (m in 0 until v) {
+				P[i][j] = min(P[i][j], P[i][m] + P[m][j])
+			}
+		}
+	}
+	var ret = INF
+
+	for (i in 0 until v) {
+		for (j in 0 until v) {
+			if (i != j) ret = min(ret, P[i][j] + P[j][i])
+		}
+	}
+	bw.write("${if (ret == INF) -1 else ret}")
+
+	bw.close()
+	br.close()
 }
