@@ -1,39 +1,42 @@
 import java.io.*
 import kotlin.math.*
 
-const val INF = Int.MAX_VALUE / 2
+const val MX = 1000001
 fun main() {
 	val br = BufferedReader(InputStreamReader(System.`in`))
 	val bw = BufferedWriter(OutputStreamWriter(System.out))
 
-	val (v, e) = br.readLine().split(" ").map { it.toInt() }
+	val (n, k) = br.readLine().split(" ").map { it.toInt() }
 
-	val P = Array(v) {Array(v) {INF} }
-	repeat(v) {
-		P[it][it] = 0
-	}
-	repeat(e) {
-		br.readLine().split(" ").map { it.toInt() - 1 }.let {
-			P[it[0]][it[1]] = it[2] + 1
+	val vstd = Array(MX) {BooleanArray(11)}
+	val que = ArrayDeque<IntArray>()
+
+	var ret = -1
+
+	que.add(intArrayOf(n, k))
+	vstd[n][k] = true
+	while (!que.isEmpty()) {
+		val a = que.first()[0]
+		val b = que.removeFirst()[1]
+		if (b == 0) {
+			ret = max(ret, a)
+			continue
 		}
-	}
-
-	for (i in 0 until v) {
-		for (j in 0 until v) {
-			for (m in 0 until v) {
-				P[i][j] = min(P[i][j], P[i][m] + P[m][j])
+		val cur = StringBuilder(a.toString())
+		for (i in cur.indices) {
+			for (j in i + 1 until cur.length) {
+				if (i == 0 && cur[j] == '0') continue
+				cur[i] = cur[j].also { cur[j] = cur[i] }
+				val nxt = cur.toString().toInt()
+				if (!vstd[nxt][b - 1]) {
+					que.add(intArrayOf(nxt, b - 1))
+					vstd[nxt][b - 1] = true
+				}
+				cur[i] = cur[j].also { cur[j] = cur[i] }
 			}
 		}
 	}
-	var ret = INF
-
-	for (i in 0 until v) {
-		for (j in 0 until v) {
-			if (i != j) ret = min(ret, P[i][j] + P[j][i])
-		}
-	}
-	bw.write("${if (ret == INF) -1 else ret}")
-
+	bw.write("$ret\n")
 	bw.close()
 	br.close()
 }
