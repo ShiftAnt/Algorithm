@@ -1,56 +1,57 @@
 import java.io.*
+import java.util.PriorityQueue
+import kotlin.math.*
 
-val dr = arrayOf(-1, 0, 0, 1)
-val dc = arrayOf(0, -1, 1, 0)
+fun dis(a: Pair<Long, Long>, b: Pair<Long, Long>): Double {
+	val y = a.first - b.first
+	val x = a.second - b.second
+	return sqrt(y.toDouble() * y + x * x)
+}
 fun main() {
 	val br = BufferedReader(InputStreamReader(System.`in`))
 	val bw = BufferedWriter(OutputStreamWriter(System.out))
 
-	val (n, m, k) = br.readLine().split(" ").map { it.toInt() }
+	val (n, m) = br.readLine().split(" ").map { it.toInt() }
 
-	val P = Array(n) {StringBuilder()}
+	val pnts = Array(n) {0L to 0L}
 
-	repeat(n) {
-		P[it] = StringBuilder(br.readLine())
+	repeat(n) { it ->
+		pnts[it] = br.readLine().split(" ").map { it.toLong() }.let { e ->
+			e[0] to e[1]
+		}
 	}
+	val P = Array(n) {DoubleArray(n)}
 
-	val que = ArrayDeque<Triple<Int, Int, Int>>()
+	for (i in 0 until n) {
+		for (j in i + 1 until n) {
+			P[i][j] = dis(pnts[i], pnts[j])
+			P[j][i] = P[i][j]
+		}
+	}
+	repeat(m) {
+		val (a, b) = br.readLine().split(" ").map { it.toInt() - 1 }
 
-	val vstd = Array(n) {Array(m) {BooleanArray(k + 1)} }
-
-	vstd[0][0][k] = true
-
-	que.add(Triple(0, 0, k))
-	var cnt = 0
-	var ret = -1
-	loop@
+		P[a][b] = 0.0
+		P[b][a] = 0.0
+	}
+	val que = PriorityQueue<Pair<Int, Double>>(compareBy { it.second })
+	val vstd = BooleanArray(n)
+	que.add(0 to 0.0)
+	var ret = 0.0
 	while (!que.isEmpty()) {
-		++cnt
-		for (tc in que.indices) {
-			val cur = que.removeFirst()
-			val z = cur.third
-			if (cur.first == n - 1 && cur.second == m - 1) {
-				ret = cnt
-				break@loop
-			}
-			for (i in 0 until 4) {
-				val y = cur.first + dr[i]
-				val x = cur.second + dc[i]
+		val idx = que.peek().first
+		val num = que.poll().second
 
-				if (y in 0 until n && x in 0 until m) {
-					if (P[y][x] == '0' && !vstd[y][x][z]) {
-						vstd[y][x][z] = true
-						que.add(Triple(y, x, z))
-					}
-					if (P[y][x] == '1' && z > 0 && !vstd[y][x][z - 1]) {
-						vstd[y][x][z - 1] = true
-						que.add(Triple(y, x, z - 1))
-					}
-				}
+		if (vstd[idx]) continue
+		vstd[idx] = true
+		ret += num
+		for (i in 0 until n) {
+			if (idx != i && !vstd[i]) {
+				que.add(i to P[idx][i])
 			}
 		}
 	}
-	bw.write("$ret")
+	bw.write(String.format("%.2f", ret))
 	bw.close()
 	br.close()
 }
