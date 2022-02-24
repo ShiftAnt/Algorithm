@@ -1,57 +1,68 @@
 import java.io.*
-import java.util.PriorityQueue
-import kotlin.math.*
 
-fun dis(a: Pair<Long, Long>, b: Pair<Long, Long>): Double {
-	val y = a.first - b.first
-	val x = a.second - b.second
-	return sqrt(y.toDouble() * y + x * x)
+var n = 0
+var m = 0
+var k = 0
+var P = arrayOf<String>()
+var tar = ""
+var len = 0
+var dp = arrayOf<Array<IntArray>>()
+
+val dr = arrayOf(-1, 0, 0, 1)
+val dc = arrayOf(0, -1, 1, 0)
+fun dfs(y: Int, x: Int, idx: Int): Int {
+	if (dp[y][x][idx] != -1) return dp[y][x][idx]
+	if (idx == len - 1) {
+		dp[y][x][idx] = 1
+		return 1
+	}
+	dp[y][x][idx] = 0
+	for (i in dr.indices) {
+		var a = y + dr[i]
+		var b = x + dc[i]
+		var step = 0
+		while (a in 0 until n && b in 0 until m && step++ < k) {
+			if (P[a][b] == tar[idx + 1]) dp[y][x][idx] += dfs(a, b, idx + 1)
+			a += dr[i]
+			b += dc[i]
+		}
+	}
+	return dp[y][x][idx]
 }
+
 fun main() {
 	val br = BufferedReader(InputStreamReader(System.`in`))
 	val bw = BufferedWriter(OutputStreamWriter(System.out))
 
-	val (n, m) = br.readLine().split(" ").map { it.toInt() }
+	br.readLine().split(" ").map { it.toInt() }.let {
+		n = it[0]
+		m = it[1]
+		k = it[2]
+	}
+	P = Array(n) {""}
+	repeat(n) {
+		P[it] = br.readLine()
+	}
 
-	val pnts = Array(n) {0L to 0L}
+	tar = br.readLine()
+	len = tar.length
 
-	repeat(n) { it ->
-		pnts[it] = br.readLine().split(" ").map { it.toLong() }.let { e ->
-			e[0] to e[1]
+	dp = Array(n) {Array(m) { IntArray(len) } }
+	repeat(n) { i ->
+		repeat(m) { j ->
+			dp[i][j].fill(-1)
 		}
 	}
-	val P = Array(n) {DoubleArray(n)}
-
+	var ret = 0
 	for (i in 0 until n) {
-		for (j in i + 1 until n) {
-			P[i][j] = dis(pnts[i], pnts[j])
-			P[j][i] = P[i][j]
-		}
-	}
-	repeat(m) {
-		val (a, b) = br.readLine().split(" ").map { it.toInt() - 1 }
-
-		P[a][b] = 0.0
-		P[b][a] = 0.0
-	}
-	val que = PriorityQueue<Pair<Int, Double>>(compareBy { it.second })
-	val vstd = BooleanArray(n)
-	que.add(0 to 0.0)
-	var ret = 0.0
-	while (!que.isEmpty()) {
-		val idx = que.peek().first
-		val num = que.poll().second
-
-		if (vstd[idx]) continue
-		vstd[idx] = true
-		ret += num
-		for (i in 0 until n) {
-			if (idx != i && !vstd[i]) {
-				que.add(i to P[idx][i])
+		for (j in 0 until m) {
+			if (P[i][j] == tar[0]) {
+				ret += dfs(i, j, 0)
 			}
 		}
 	}
-	bw.write(String.format("%.2f", ret))
+
+	bw.write("$ret")
 	bw.close()
 	br.close()
 }
