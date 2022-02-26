@@ -1,40 +1,48 @@
-import java.util.*
-import kotlin.math.*
-
-fun include(tx: Long, ty: Long, rx1: Long, ry1: Long, rx2: Long, ry2: Long)
-    = tx in min(rx1, rx2)..max(rx1, rx2) && ty in min(ry1, ry2)..max(ry1, ry2)
-
-fun solution(): Int {
-    val sc = Scanner(System.`in`)
-
-    val x = LongArray(4)
-    val y = LongArray(4)
-    repeat(8) {
-        if (it % 2 == 0) x[it / 2] = sc.nextLong()
-        else y[it / 2] = sc.nextLong()
-    }
-    val a = (x[0] - x[1]) * (y[2] - y[3]) - (y[0] - y[1]) * (x[2] - x[3])
-    val b = (x[0] * y[1] - y[0] * x[1]) * (x[2] - x[3]) - (x[0] - x[1]) * (x[2] * y[3] - y[2] * x[3])
-    val c = (x[0] * y[1] - y[0] * x[1]) * (y[2] - y[3]) - (y[0] - y[1]) * (x[2] * y[3] - y[2] * x[3])
-    if (a == 0L) {
-        if ((y[2] - y[0]) * (x[3] - x[0]) == (x[2] - x[0]) * (y[3] - y[0])) {
-            var ret = false
-            repeat(2) {
-                ret = ret.or(include(x[it], y[it], x[2], y[2], x[3], y[3]))
-                ret = ret.or(include(x[it + 2], y[it + 2], x[0], y[0], x[1], y[1]))
-            }
-            return if (ret) 1 else 0
-        }
-        return 0
-    }
-    repeat(4) {
-        x[it] *= a
-        y[it] *= a
-    }
-    return if (include(b, c, x[0], y[0], x[1], y[1]) && include(b, c, x[2], y[2], x[3], y[3])) 1 else 0
-}
-
+import java.io.*
+val dr = arrayOf(0, 1, 1, 1)
+val dc = arrayOf(1, -1, 0, 1)
 fun main() {
-    println(solution())
+	val br = BufferedReader(InputStreamReader(System.`in`))
+	val bw = BufferedWriter(OutputStreamWriter(System.out))
+	val n = 3
+	while (true) {
+		val cur = br.readLine()
+		if (cur == "end") break
+		val P = Array(n) {CharArray(n)}
 
+		repeat(9) {
+			P[it / n][it % n] = cur[it]
+		}
+		var o = 0
+		var x = 0
+		for (i in 0 until n) {
+			for (j in 0 until n) {
+				if (P[i][j] == 'O') ++o
+				else if (P[i][j] == 'X') ++x
+			}
+		}
+		if (x - o != 0 && x - o != 1) {
+			bw.write("invalid\n")
+			continue
+		}
+		var co = false
+		var cx = false
+		for (i in 0 until n) {
+			for (j in 0 until n) {
+				if (P[i][j] == '.') continue
+				for (k in dr.indices) {
+					val y = i + dr[k] * (n - 1)
+					val x = j + dc[k] * (n - 1)
+					if (y in 0 until n && x in 0 until n && P[i][j] == P[y][x] && P[i][j] == P[i + dr[k]][j + dc[k]]) {
+                        if (P[i][j] == 'O') co = true
+                        else cx = true
+					}
+				}
+			}
+		}
+		var ret = "valid"
+		if (co && cx || cx && x == o || co && o != x || !co && !cx && o + x != n * n) ret = "invalid"
+		bw.write("$ret\n")
+	}
+	bw.flush()
 }
