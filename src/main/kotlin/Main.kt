@@ -1,61 +1,40 @@
-import java.io.*
-import java.util.PriorityQueue
+import java.util.*
+import kotlin.math.*
 
-class Node(
-	val y: Int,
-	val x: Int,
-	val k: Int,
-	val isNight: Int,
-    val ret: Int
-)
-val dr = arrayOf(-1, 0, 0, 1)
-val dc = arrayOf(0, -1, 1, 0)
-fun main() {
-	val br = BufferedReader(InputStreamReader(System.`in`))
-	val bw = BufferedWriter(OutputStreamWriter(System.out))
+fun include(tx: Long, ty: Long, rx1: Long, ry1: Long, rx2: Long, ry2: Long)
+    = tx in min(rx1, rx2)..max(rx1, rx2) && ty in min(ry1, ry2)..max(ry1, ry2)
 
-	val (n, m, k) = br.readLine().split(" ").map { it.toInt() }
+fun solution(): Int {
+    val sc = Scanner(System.`in`)
 
-	val P = Array(n) {br.readLine()}
-
-	val vstd = Array(n) {IntArray(m)}
-    repeat(n) {
-        vstd[it].fill(-1)
+    val x = LongArray(4)
+    val y = LongArray(4)
+    repeat(8) {
+        if (it % 2 == 0) x[it / 2] = sc.nextLong()
+        else y[it / 2] = sc.nextLong()
     }
-
-	val que = PriorityQueue<Node>(compareBy { it.ret })
-
-	vstd[0][0] = k
-
-	que.add(Node(0, 0, k, 0, 1))
-	que.add(Node(0, 0, k, 1, 2))
-	var ret = -1
-    if (n == 1 && m == 1) ret = 1
-	loop@
-	while (!que.isEmpty()) {
-        val cur = que.poll()
-        for (i in dr.indices) {
-            val y = cur.y + dr[i]
-            val x = cur.x + dc[i]
-            if (y in 0 until n && x in 0 until m) {
-                if (y == n - 1 && x == m - 1) {
-                    ret = cur.ret + 1
-                    break@loop
-                }
-                if (P[y][x] == '0' && vstd[y][x] < cur.k) {
-                    vstd[y][x] = cur.k
-                    que.add(Node(y, x, cur.k, 1 - cur.isNight, cur.ret + 1))
-                    que.add(Node(y, x, cur.k, cur.isNight, cur.ret + 2))
-                }
-                else if (cur.isNight == 0 && P[y][x] == '1' && cur.k > 0 && vstd[y][x] < cur.k - 1) {
-                    vstd[y][x] = cur.k - 1
-                    que.add(Node(y, x, cur.k - 1, 1, cur.ret + 1))
-                    que.add(Node(y, x, cur.k - 1, 0, cur.ret + 2))
-                }
+    val a = (x[0] - x[1]) * (y[2] - y[3]) - (y[0] - y[1]) * (x[2] - x[3])
+    val b = (x[0] * y[1] - y[0] * x[1]) * (x[2] - x[3]) - (x[0] - x[1]) * (x[2] * y[3] - y[2] * x[3])
+    val c = (x[0] * y[1] - y[0] * x[1]) * (y[2] - y[3]) - (y[0] - y[1]) * (x[2] * y[3] - y[2] * x[3])
+    if (a == 0L) {
+        if ((y[2] - y[0]) * (x[3] - x[0]) == (x[2] - x[0]) * (y[3] - y[0])) {
+            var ret = false
+            repeat(2) {
+                ret = ret.or(include(x[it], y[it], x[2], y[2], x[3], y[3]))
+                ret = ret.or(include(x[it + 2], y[it + 2], x[0], y[0], x[1], y[1]))
             }
+            return if (ret) 1 else 0
         }
+        return 0
+    }
+    repeat(4) {
+        x[it] *= a
+        y[it] *= a
+    }
+    return if (include(b, c, x[0], y[0], x[1], y[1]) && include(b, c, x[2], y[2], x[3], y[3])) 1 else 0
+}
 
-	}
-    bw.write("$ret")
-	bw.flush()
+fun main() {
+    println(solution())
+
 }
