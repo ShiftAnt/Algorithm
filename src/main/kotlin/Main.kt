@@ -1,29 +1,64 @@
 import java.io.*
-const val MOD = 1000000
-fun times(a: Array<LongArray>, b: Array<LongArray>): Array<LongArray> {
-	val ret = Array(2) {LongArray(2)}
 
-	for (i in 0 until 2) {
-		for (j in 0 until 2) {
-			for (k in 0 until 2) {
-				ret[i][j] += a[i][k] * b[k][j]
-			}
-			ret[i][j] = ret[i][j] % MOD
-		}
-	}
-	return ret
-}
+class Node(
+	val y: Int,
+	val x: Int,
+	val k: Int,
+	val isNight: Int
+)
+val dr = arrayOf(-1, 0, 0, 1)
+val dc = arrayOf(0, -1, 1, 0)
 fun main() {
 	val br = BufferedReader(InputStreamReader(System.`in`))
+	val bw = BufferedWriter(OutputStreamWriter(System.out))
 
-	var n = br.readLine().toLong()
-	var cur = arrayOf(longArrayOf(1, 0), longArrayOf(0, 1))
-	var time = arrayOf(longArrayOf(1, 1), longArrayOf(1, 0))
+	val (n, m, k) = br.readLine().split(" ").map { it.toInt() }
 
-	while (n != 0L) {
-		if (n % 2 == 1L) cur = times(time, cur)
-		n /= 2
-		time = times(time, time)
+	val P = Array(n) {br.readLine()}
+
+	val vstd = Array(n) {Array(m) {Array(k + 1) {BooleanArray(2)} } }
+
+	val que = ArrayDeque<Node>()
+
+	vstd[0][0][k][0] = true
+
+	que.add(Node(0, 0, k, 0))
+	var step = 0
+	var ret = -1
+	loop@
+	while (!que.isEmpty()) {
+		++step
+		for (tc in que.indices) {
+			val cur = que.removeFirst()
+			if (cur.y == n - 1 && cur.x == m - 1) {
+				ret = step
+				break@loop
+			}
+			for (i in dr.indices) {
+				val y = cur.y + dr[i]
+				val x = cur.x + dc[i]
+
+				if (y in 0 until n && x in 0 until m) {
+                    if (y == n - 1 && x == m - 1) {
+                        ret = step + 1
+                        break@loop
+                    }
+					if (P[y][x] == '0' && !vstd[y][x][cur.k][1 - cur.isNight]) {
+						vstd[y][x][cur.k][1 - cur.isNight] = true
+						que.add(Node(y, x, cur.k, 1 - cur.isNight))
+					}
+					else if (cur.isNight == 0 && P[y][x] == '1' && cur.k > 0 && !vstd[y][x][cur.k - 1][1]) {
+						vstd[y][x][cur.k - 1][1] = true
+						que.add(Node(y, x, cur.k - 1, 1))
+					}
+				}
+			}
+			if (!vstd[cur.y][cur.x][cur.k][1 - cur.isNight]) {
+				vstd[cur.y][cur.x][cur.k][1 - cur.isNight] = true
+				que.add(Node(cur.y, cur.x, cur.k, 1 - cur.isNight))
+			}
+		}
 	}
-	println("${cur[1][0]}")
+	bw.write("$ret")
+	bw.flush()
 }
