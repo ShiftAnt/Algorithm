@@ -1,61 +1,46 @@
-import java.util.Stack
+import java.io.*
 
-const val NULL = -2
-class Solution {
-	fun solution(n: Int, k: Int, cmd: Array<String>): String {
-		val P = Array(n) {IntArray(2)}
-		repeat(n) {
-			P[it][0] = it - 1
-			P[it][1] = it + 1
+fun main() {
+	val br = BufferedReader(InputStreamReader(System.`in`))
+	val bw = BufferedWriter(OutputStreamWriter(System.out))
+	for (T in 0 until br.readLine().toInt()) {
+		val n = br.readLine().toInt()
+		val par = IntArray(n)
+		par.fill(-1)
+		val ch = Array(n) {ArrayList<Int>()}
+		repeat(n - 1) {
+			val (a, b) = br.readLine().split(" ").map { it.toInt() - 1 }
+			par[b] = a
+			ch[a].add(b)
 		}
-		val ret = BooleanArray(n)
-		ret.fill(true)
-		P[0][0] = NULL
-		P[n - 1][1] = NULL
-		var cur = k
-		val stack = Stack<Int>()
-		for (c in cmd) {
-			c.split(" ").let {
+		var (a, b) = br.readLine().split(" ").map { it.toInt() - 1 }
 
-				when (it[0]) {
-					"U" -> {
-						repeat(it[1].toInt()) {
-							cur = P[cur][0]
-						}
-					}
-					"D" -> {
-						repeat(it[1].toInt()) {
-							cur = P[cur][1]
-						}
-					}
-					"C" -> {
-						stack.push(cur)
-						val prv = P[cur][0]
-						val nxt = P[cur][1]
-						if (prv != NULL) {
-							P[prv][1] = P[cur][1]
-						}
-						if (nxt != NULL) {
-							P[nxt][0] = P[cur][0]
-						}
-						ret[cur] = false
-						cur = P[cur][1].let { if (it == NULL) P[cur][0] else it }
-					}
-					"Z" -> {
-						val tar = stack.pop()
-						val prv = P[tar][0]
-						val nxt = P[tar][1]
-						if (prv != NULL) P[prv][1] = tar
-						if (nxt != NULL) P[nxt][0] = tar
-						ret[tar] = true
-					}
+		var rot = -1
+		repeat(n) {
+			if (par[it] == -1) {
+				rot = it
+				return@repeat
+			}
+		}
+		val dept = IntArray(n)
+		dept.fill(-1)
+		dept[rot] = 0
+		val que = ArrayDeque<Int>()
+		que.add(rot)
+		while (!que.isEmpty()) {
+			val cur = que.removeFirst()
+			for (nxt in ch[cur]) {
+				if (dept[nxt] == -1) {
+					dept[nxt] = dept[cur] + 1
+					que.add(nxt)
 				}
 			}
 		}
-		return StringBuilder().also {
-			for (i in 0 until n) {
-				it.append(if (ret[i]) "O" else "X")
-			}
-		}.toString()
+		while (a != b) {
+			if (dept[a] > dept[b]) a = par[a]
+			else b = par[b]
+		}
+		bw.write("${a + 1}\n")
 	}
+	bw.flush()
 }
