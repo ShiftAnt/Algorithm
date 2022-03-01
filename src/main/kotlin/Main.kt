@@ -1,48 +1,61 @@
-import java.io.*
+import java.util.Stack
 
-fun solution(): List<Int> {
-	val (n, k) = readLine()!!.split(" ").map { it.toInt()}
-	val ret = ArrayList<Int>()
-	if (n == k) {
-		ret.add(n)
-		return ret
-	}
-	val mx = 200001
-	val P = IntArray(mx)
-	P.fill(-1)
-	val que = ArrayDeque<Int>()
-	que.add(n)
+const val NULL = -2
+class Solution {
+	fun solution(n: Int, k: Int, cmd: Array<String>): String {
+		val P = Array(n) {IntArray(2)}
+		repeat(n) {
+			P[it][0] = it - 1
+			P[it][1] = it + 1
+		}
+		val ret = BooleanArray(n)
+		ret.fill(true)
+		P[0][0] = NULL
+		P[n - 1][1] = NULL
+		var cur = k
+		val stack = Stack<Int>()
+		for (c in cmd) {
+			c.split(" ").let {
 
-	P[n] = n
-	loop@
-	while (!que.isEmpty()) {
-		val cur = que.removeFirst()
-		val nxts = arrayOf(cur - 1, cur + 1 , cur * 2)
-
-		for (nxt in nxts) {
-			if (nxt in 0 until mx && P[nxt] == -1) {
-				P[nxt] = cur
-				if (nxt == k) break@loop
-				que.add(nxt)
+				when (it[0]) {
+					"U" -> {
+						repeat(it[1].toInt()) {
+							cur = P[cur][0]
+						}
+					}
+					"D" -> {
+						repeat(it[1].toInt()) {
+							cur = P[cur][1]
+						}
+					}
+					"C" -> {
+						stack.push(cur)
+						val prv = P[cur][0]
+						val nxt = P[cur][1]
+						if (prv != NULL) {
+							P[prv][1] = P[cur][1]
+						}
+						if (nxt != NULL) {
+							P[nxt][0] = P[cur][0]
+						}
+						ret[cur] = false
+						cur = P[cur][1].let { if (it == NULL) P[cur][0] else it }
+					}
+					"Z" -> {
+						val tar = stack.pop()
+						val prv = P[tar][0]
+						val nxt = P[tar][1]
+						if (prv != NULL) P[prv][1] = tar
+						if (nxt != NULL) P[nxt][0] = tar
+						ret[tar] = true
+					}
+				}
 			}
 		}
+		return StringBuilder().also {
+			for (i in 0 until n) {
+				it.append(if (ret[i]) "O" else "X")
+			}
+		}.toString()
 	}
-	var cur = k
-	while (cur != n) {
-		ret.add(cur)
-		cur = P[cur]
-	}
-	ret.add(cur)
-	return ret.reversed()
-}
-
-fun main() {
-	val bw = BufferedWriter(OutputStreamWriter(System.out))
-	solution().let {
-		bw.write("${it.size - 1}\n")
-		it.forEach { ele ->
-			bw.write("$ele ")
-		}
-	}
-	bw.flush()
 }
