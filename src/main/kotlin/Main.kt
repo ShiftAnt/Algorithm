@@ -1,33 +1,19 @@
-const val MX = 1001
-fun solution(): Int {
-	val (a, b, c) = readLine()!!.split(" ").map { it.toInt() }.toIntArray()
-	if (a == b && b == c) return 1
-	if ((a + b + c) % 3 != 0) return 0
-	val vstd = Array(MX) {BooleanArray(MX)}
-
-	vstd[a][b] = true
-
-	val que = ArrayDeque<IntArray>()
-	que.add(listOf(a, b, c).sorted().toIntArray())
-	while (!que.isEmpty()) {
-		val cur = que.removeFirst()
-
-		for (i in 0 until 3) {
-			for (j in i + 1 until 3) {
-				if (cur[i] < cur[  j]) {
-					val nxt = intArrayOf(cur[i] * 2, cur[j] - cur[i], cur[3 - i - j])
-					nxt.sort()
-					if (nxt[0] == nxt[1] && nxt[1] == nxt[2]) return 1
-					if (!vstd[nxt[0]][nxt[1]]) {
-						vstd[nxt[0]][nxt[1]] = true
-						que.add(nxt)
-					}
+fun main() {
+	val w = readLine()!!.split(" ").map { it.toInt() }[1]
+	val blo = readLine()!!.split(" ").map { it.toInt() }
+	var ret = 0
+	for (i in 1..blo.maxOf { it }) {
+		var b = 0
+		var e = 0
+		for (j in 0 until w) {
+			if (blo[j] >= i) {
+				if (++b == 2) {
+					ret += e
+					b = 1
 				}
-			}
+				e = 0
+			} else ++e
 		}
 	}
-	return 0
-}
-fun main() {
-	println(solution())
+	println(ret)
 }
