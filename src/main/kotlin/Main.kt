@@ -1,87 +1,57 @@
 import java.io.*
+import java.util.PriorityQueue
+import kotlin.math.*
 
-const val MX = 500
-val P = Array(MX * 2 + 1) {IntArray(MX * 2 + 1)}
-var n = 0
-var djs = arrayOf<IntArray>()
-
-fun draw(idx: Int, a: List<Int>) {
-	for (i in listOf(a[1], a[3])) {
-		for (j in a[0]..a[2]) {
-			if (P[i][j] == -1 || P[i][j] == idx) P[i][j] = idx
-			else {
-				merge(P[i][j], idx)
-				P[i][j] = idx
-			}
-		}
-	}
-	for (i in a[1]..a[3]) {
-		for (j in listOf(a[0], a[2])) {
-			if (P[i][j] == -1 || P[i][j] == idx) P[i][j] = idx
-			else {
-				merge(P[i][j], idx)
-				P[i][j] = idx
-			}
-		}
-	}
-}
-
-fun find(a: Int, set: Int = -1): Int {
-	var cur = a
-
-	while (cur != djs[cur][0]) {
-		val tmp = cur
-		cur = djs[cur][0]
-		if (set != -1) {
-			djs[tmp][0] = set
-		}
-	}
-	if (set != -1) djs[cur][0] = set
-	return cur
-}
-
-fun merge(a: Int, b: Int) {
-	val ra = find(a)
-	val rb = find(b)
-	if (ra == rb) return
-	if (djs[ra][1] < djs[rb][1]) {
-		djs[rb][1] += djs[ra][1]
-		find(a, rb)
-		find(b, rb)
-	} else {
-		djs[ra][1] += djs[rb][1]
-		find(a, ra)
-		find(b, ra)
-	}
-}
-
+const val INF = Long.MAX_VALUE
+const val NONE = Long.MIN_VALUE
 fun main() {
 	val br = BufferedReader(InputStreamReader(System.`in`))
-	n = br.readLine().toInt()
-	djs = Array(n + 1) { IntArray(2) }
 
-	repeat(n + 1) {
-		djs[it][0] = it
-		djs[it][1] = 1
-	}
+	val (n, m, d, e) = br.readLine().split(" ").map { it.toInt() }
 
-	repeat(P.size) {
-		P[it].fill(-1)
-	}
-	P[MX][MX] = 0
+	val al = Array(n) {ArrayList<Pair<Int, Int>>()}
 
-	for (T in 1..n) {
-		draw(T, br.readLine().split(" ").map { it.toInt() + MX})
-	}
-	val vstd = BooleanArray(n + 1)
-	var ret = -1
+	val h = br.readLine().split(" ").map { it.toLong() }
 
-	repeat(n + 1) {
-		val fnd = find(it)
-		if (!vstd[fnd]) {
-			++ret
-			vstd[fnd] = true
+	repeat(m) {
+		br.readLine().split(" ").map { it.toInt() - 1 }.let {
+			al[it[0]].add(it[1] to it[2] + 1)
+			al[it[1]].add(it[0] to it[2] + 1)
 		}
 	}
-	println(ret)
+	val que = Array(2) {(PriorityQueue<Pair<Int, Long>>(compareBy { it.second }))}
+
+	val dis = Array(2) {LongArray(n)}
+    repeat(dis.size) {
+        dis[it].fill(INF)
+    }
+	dis[0][0] = 0
+	dis[1][n - 1] = 0
+
+	que[0].add(0 to 0L)
+	que[1].add(n - 1 to 0L)
+	val vstd = Array(2) {BooleanArray(n)}
+	var ret = NONE
+	for (T in 1 downTo 0) {
+		while (!que[T].isEmpty()) {
+			val cur = que[T].peek().first
+			val num = que[T].poll().second
+			if (vstd[T][cur]) continue
+			vstd[T][cur] = true
+
+			if (T == 0 && dis[1][cur] != INF) {
+				ret = max(ret, (h[cur] * e - (dis[0][cur] + dis[1][cur]) * d))
+			}
+			for (nxt in al[cur]) {
+				if (h[cur] >= h[nxt.first]) continue
+
+				val nxtVal = num + nxt.second
+				if (dis[T][nxt.first] > nxtVal) {
+					dis[T][nxt.first] = nxtVal
+					que[T].add(nxt.first to nxtVal)
+				}
+			}
+		}
+	}
+	println(if (ret == NONE) "Impossible" else ret)
 }
