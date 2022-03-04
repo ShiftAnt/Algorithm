@@ -1,57 +1,65 @@
 import java.io.*
-import java.util.PriorityQueue
-import kotlin.math.*
+val dr = arrayOf(-1, 0, 0, 1)
+val dc = arrayOf(0, -1, 1, 0)
 
-const val INF = Long.MAX_VALUE
-const val NONE = Long.MIN_VALUE
+fun twoPow(cnt: Int): Long {
+	var ret = 1L
+	var sub = 2L
+	var tmp = cnt
+	while (tmp != 0) {
+		if (tmp % 2 == 1) ret *= sub
+		tmp /= 2
+		ret %= MOD
+		sub *= sub
+		sub %= MOD
+	}
+	return ret
+}
+const val MOD = 1_000_000_007
 fun main() {
 	val br = BufferedReader(InputStreamReader(System.`in`))
+	val (n, m) = br.readLine().split(" ").map { it.toInt() }
 
-	val (n, m, d, e) = br.readLine().split(" ").map { it.toInt() }
+	val P = Array(n) {br.readLine()}
 
-	val al = Array(n) {ArrayList<Pair<Int, Int>>()}
+	val inside = Array(n) {BooleanArray(m)}
 
-	val h = br.readLine().split(" ").map { it.toLong() }
-
-	repeat(m) {
-		br.readLine().split(" ").map { it.toInt() - 1 }.let {
-			al[it[0]].add(it[1] to it[2] + 1)
-			al[it[1]].add(it[0] to it[2] + 1)
+	for (i in 0 until n) {
+		loop@
+		for (j in 0 until m) {
+			for (k in dr.indices) {
+				val y = i + dr[k]
+				val x = j + dc[k]
+				if (y in 0 until n && x in 0 until m && P[i][j] != P[y][x]) continue@loop
+			}
+			inside[i][j] = true
 		}
 	}
-	val que = Array(2) {(PriorityQueue<Pair<Int, Long>>(compareBy { it.second }))}
-
-	val dis = Array(2) {LongArray(n)}
-    repeat(dis.size) {
-        dis[it].fill(INF)
-    }
-	dis[0][0] = 0
-	dis[1][n - 1] = 0
-
-	que[0].add(0 to 0L)
-	que[1].add(n - 1 to 0L)
-	val vstd = Array(2) {BooleanArray(n)}
-	var ret = NONE
-	for (T in 1 downTo 0) {
-		while (!que[T].isEmpty()) {
-			val cur = que[T].peek().first
-			val num = que[T].poll().second
-			if (vstd[T][cur]) continue
-			vstd[T][cur] = true
-
-			if (T == 0 && dis[1][cur] != INF) {
-				ret = max(ret, (h[cur] * e - (dis[0][cur] + dis[1][cur]) * d))
-			}
-			for (nxt in al[cur]) {
-				if (h[cur] >= h[nxt.first]) continue
-
-				val nxtVal = num + nxt.second
-				if (dis[T][nxt.first] > nxtVal) {
-					dis[T][nxt.first] = nxtVal
-					que[T].add(nxt.first to nxtVal)
+	var ret = 1L
+	val vstd = Array(n) {BooleanArray(m)}
+	val que = ArrayDeque<Pair<Int, Int>>()
+	for (i in 0 until n) {
+		for (j in 0 until m) {
+			if (!vstd[i][j] && inside[i][j]) {
+				var sum = 0
+				vstd[i][j] = true
+				que.add(i to j)
+				while (!que.isEmpty()) {
+					val cur = que.removeFirst()
+					++sum
+					for (k in dr.indices) {
+						val y = cur.first + dr[k]
+						val x = cur.second + dc[k]
+						if (y in 0 until n && x in 0 until m && !vstd[y][x] && P[y][x] == P[i][j] && inside[y][x]) {
+							vstd[y][x] = true
+							que.add(y to x)
+						}
+					}
 				}
+				ret *= twoPow(sum)
+				ret %= MOD
 			}
 		}
 	}
-	println(if (ret == NONE) "Impossible" else ret)
+	println(ret)
 }
