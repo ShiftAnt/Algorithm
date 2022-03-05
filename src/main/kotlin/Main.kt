@@ -1,33 +1,52 @@
 import java.io.*
-val dr = arrayOf(-1, 0, 0, 1)
-val dc = arrayOf(0, -1, 1, 0)
+import java.util.Scanner
+import kotlin.math.*
 
-fun twoPow(cnt: Int, sub: Long = 2L): Long {
-	var ret = 1L
-    if (cnt == 0) return ret
-    if (cnt % 2 == 1) ret *= sub
-	ret %= MOD
-    ret *= twoPow(cnt / 2, (sub * sub) % MOD)
-    return ret % MOD
-}
-const val MOD = 1_000_000_007
 fun main() {
-	val br = BufferedReader(InputStreamReader(System.`in`))
-	val (n, m) = br.readLine().split(" ").map { it.toInt() }
-	val P = Array(n) {br.readLine()}
-	var ret = 0L
-	for (i in 0 until n) {
-		loop@
-		for (j in 0 until m) {
-			for (k in dr.indices) {
-				val y = i + dr[k]
-				val x = j + dc[k]
-				if (y in 0 until n && x in 0 until m && P[i][j] != P[y][x]) continue@loop
-			}
-			++ret
-		}
+	val sc = Scanner(System.`in`)
+	val bw = BufferedWriter(OutputStreamWriter(System.out))
+	val n = sc.nextInt()
+	val P = IntArray(n)
+	repeat(n) {
+		P[it] = sc.nextInt()
 	}
-	ret = twoPow(ret.toInt())
+	val al = ArrayList<Pair<Int, Int>>()
 
-	println(ret)
+	for (tc in 0 until sc.nextInt()) {
+		var a = sc.nextInt()
+		var b = sc.nextInt()
+		if (a <= b) a = b
+		var cur = a to b
+		while (al.isNotEmpty()) {
+			val lst = al.last()
+			if (max(cur.first, cur.second) >= max(lst.first, lst.second)) al.removeLast()
+			else if (cur.first >= lst.second || cur.second >= lst.second) {
+				cur = lst.first to cur.second
+				al.removeLast()
+			} else break
+		}
+		al.add(cur)
+	}
+	val que = ArrayDeque<Int>()
+	repeat(al[0].first) {
+		que.add(P[it])
+	}
+	que.sort()
+	val ret = ArrayDeque<Int>()
+	var cur = al[0].first
+	for (nxt in al) {
+		for (i in nxt.first until cur) ret.addFirst(que.removeFirst())
+		cur = nxt.first
+		for (i in nxt.second until cur) ret.addFirst(que.removeLast())
+		cur = nxt.second
+	}
+	for (i in 0 until cur) ret.addFirst(que.removeFirst())
+
+	for (i in al[0].first until n) {
+		ret.addLast(P[i])
+	}
+	repeat(n) {
+		bw.write("${ret[it]} ")
+	}
+	bw.flush()
 }
