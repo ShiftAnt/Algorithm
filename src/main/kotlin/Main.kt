@@ -1,63 +1,101 @@
 import java.io.*
+import kotlin.math.*
 
-val dr = arrayOf(0, 1, 0, -1)
-val dc = arrayOf(-1, 0, 1, 0)
-val sy = arrayOf(
-	arrayOf(-1, 1, -1, 1, -2, 2, -1, 1, 0),
-	arrayOf(0, 0, 1, 1, 1, 1, 2, 2, 3),
-	arrayOf(-1, 1, -1, 1, -2, 2, -1, 1, 0),
-	arrayOf(0, 0, -1, -1, -1, -1, -2, -2, -3)
-	)
-val sx = arrayOf(
-	arrayOf(0, 0, -1, -1, -1, -1, -2, -2, -3),
-	arrayOf(-1, 1, -1, 1, -2, 2, -1, 1, 0),
-	arrayOf(0, 0, 1, 1, 1, 1, 2, 2, 3),
-	arrayOf(-1, 1, -1, 1, -2, 2, -1, 1, 0)
-	)
-val prcnt = arrayOf(1, 1, 7, 7, 2, 2, 10, 10, 5)
-var ret = 0
+var n = 0
+var q = 0
+var tn = 0
+var P = arrayOf<IntArray>()
+
+fun rotSub(y: Int, x: Int, sub: Array<IntArray>) {
+	val k = sub.size
+	for (i in 0 until k) {
+		for (j in 0 until k) {
+			sub[i][j] = P[y + i][x + j]
+		}
+	}
+	for (i in 0 until k) {
+		for (j in 0 until k) {
+			P[y + j][x + k - 1 - i] = sub[i][j]
+		}
+	}
+}
+
+fun rot(idx: Int) {
+	val k = 1.shl(idx)
+	val sub = Array(k) {IntArray(k)}
+	for (i in 0 until tn step k) {
+		for (j in 0 until tn step k) {
+			rotSub(i, j, sub)
+		}
+	}
+}
+val dr = arrayOf(-1, 0, 0, 1)
+val dc = arrayOf(0, -1, 1, 0)
+val dels = ArrayDeque<Pair<Int, Int>>()
+fun dec() {
+	for (i in 0 until tn) {
+		for (j in 0 until tn) {
+			if (P[i][j] == 0) continue
+			var sum = 0
+			for (k in dr.indices) {
+				val y = i + dr[k]
+				val x = j + dc[k]
+				if (y in 0 until tn && x in 0 until tn && P[y][x] > 0) ++sum
+			}
+			if (sum < 3) dels.add(i to j)
+		}
+	}
+	while (dels.isNotEmpty()) {
+		val cur = dels.removeFirst()
+		--P[cur.first][cur.second]
+	}
+}
+
+fun space(): Int {
+	val que = ArrayDeque<Pair<Int, Int>>()
+	val vstd = Array(tn) {BooleanArray(tn)}
+	var ret = 0
+	for (i in 0 until tn) {
+		 for (j in 0 until tn) {
+			 if (P[i][j] > 0 && !vstd[i][j]) {
+				 vstd[i][j] = true
+				 que.add(i to j)
+				 var sum = 0
+				 while (!que.isEmpty()) {
+					 val cur = que.removeFirst()
+					 ++sum
+					 for (k in dr.indices) {
+						 val y = cur.first + dr[k]
+						 val x = cur.second + dc[k]
+						 if (y in 0 until tn && x in 0 until tn && !vstd[y][x] && P[y][x] > 0) {
+							 vstd[y][x] = true
+							 que.add(y to x)
+						 }
+					 }
+				 }
+				 ret = max(ret, sum)
+			 }
+		 }
+	}
+	return ret
+}
 
 fun main() {
 	val br = BufferedReader(InputStreamReader(System.`in`))
-	val n = br.readLine().toInt()
-	val P = Array(n) {br.readLine().split(" ").map { it.toInt() }.toIntArray()}
-	var y = n / 2
-	var x = n / 2
-	var d = 0
-	var mx = 1
-	var step = 0
-	var isTwo = false
-	while (y != 0 || x != 0) {
-		val ny = y + dr[d]
-		val nx = x + dc[d]
-		val snd = P[ny][nx]
-		var sum = 0
-		P[ny][nx] = 0
-
-		for (i in sy[d].indices) {
-			val a = y + sy[d][i]
-			val b = x + sx[d][i]
-			val cur = snd * prcnt[i] / 100
-			sum += cur
-			if (a in 0 until n && b in 0 until n) P[a][b] += cur
-			else ret += cur
-		}
-		val rem = snd - sum
-
-		val a = ny + dr[d]
-		val b = nx + dc[d]
-
-		if (a in 0 until n && b in 0 until n) P[a][b] += rem
-		else ret += rem
-
-		if (step + 1 == mx) {
-			step = 0
-			if (isTwo) mx += 1
-			isTwo = !isTwo
-			d = (d + 1) % 4
-		} else step += 1
-		y = ny
-		x = nx
+	br.readLine().split(" ").map { it.toInt() }.let {
+		n = it[0]; q = it[1]
 	}
-	println(ret)
+	tn = 1.shl(n)
+	P = Array(tn) {br.readLine().split(" ").map { it.toInt() }.toIntArray()}
+	br.readLine().split(" ").map { it.toInt() }.forEach {
+		rot(it)
+		dec()
+	}
+	var sum = 0
+
+	repeat(tn) {
+		sum += P[it].sum()
+	}
+	println(sum)
+	println(space())
 }
