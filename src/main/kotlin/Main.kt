@@ -1,40 +1,34 @@
 import java.io.*
 
-var n = 0
-var al = arrayOf<ArrayList<Int>>()
-var vstd = booleanArrayOf()
-
+var r = 0
+var c = 0
+var k = 0
 var ret = 0
-var early = booleanArrayOf()
-fun dfs(idx: Int) {
-    vstd[idx] = true
-    var childIdea = false
-    for (nxt in al[idx]) {
-        if (!vstd[nxt]) {
-            dfs(nxt)
-            if (!early[nxt]) {
-                childIdea = true
-            }
+var P = arrayOf<StringBuilder>()
+val dr = arrayOf(-1, 0, 0, 1)
+val dc = arrayOf(0, -1, 1, 0)
+fun dfs(y: Int, x: Int, mv: Int) {
+    if (y == 0 && x == c - 1) {
+        if (mv == k) ++ret
+        return
+    }
+    if (mv == k) return
+    P[y][x] = 'T'
+    for (i in dr.indices) {
+        val a = y + dr[i]
+        val b = x + dc[i]
+        if (a in 0 until r && b in 0 until c && P[a][b] == '.') {
+            dfs(a, b, mv + 1)
         }
     }
-    if (childIdea) {
-        early[idx] = true
-        ++ret
-    }
+    P[y][x] = '.'
 }
-
 fun main() {
     val br = BufferedReader(InputStreamReader(System.`in`))
-    n = br.readLine().toInt()
-    al = Array(n) {ArrayList()}
-    repeat(n - 1) {
-        br.readLine().split(" ").map { it.toInt() - 1 }.let {
-            al[it[0]].add(it[1])
-            al[it[1]].add(it[0])
-        }
+    br.readLine().split(" ").map { it.toInt() }.let {
+        r = it[0]; c = it[1]; k = it[2]
     }
-    early = BooleanArray(n)
-    vstd = BooleanArray(n)
-    dfs(0)
+    P = Array(r) {StringBuilder(br.readLine())}
+    dfs(r - 1, 0, 1)
     println(ret)
 }
