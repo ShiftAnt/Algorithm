@@ -1,27 +1,14 @@
-import java.io.*
 
 fun main() {
-	val br = BufferedReader(InputStreamReader(System.`in`))
-	val bw = BufferedWriter(OutputStreamWriter(System.out))
-
-	val n = br.readLine().toInt()
-	val P = Array(n) {IntArray(n)}
-
-	repeat(br.readLine().toInt()) {
-		br.readLine().split(" ").map { it.toInt() - 1 }.let {
-			P[it[0]][it[1]] = 1
-			P[it[1]][it[0]] = -1
+	val n = readLine()!!.toInt()
+	val P = LongArray(n + 1)
+	P[0] = 1
+	if (n >= 2) P[2] = 3
+	for (i in 4..n step 2) {
+		P[i] = P[i - 2] * 3
+		for (j in i - 4 downTo 0 step 2) {
+			P[i] += P[j] * 2
 		}
 	}
-	for (k in 0 until n) {
-		for (i in 0 until n) {
-			for (j in 0 until n) {
-				if (P[i][k] != 0 && P[i][k] == P[k][j]) P[i][j] = P[i][k]
-			}
-		}
-	}
-	repeat(n) {
-		bw.write("${P[it].count { it == 0 } - 1}\n")
-	}
-	bw.flush()
+	println(P[n])
 }
