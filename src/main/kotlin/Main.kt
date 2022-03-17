@@ -1,14 +1,21 @@
-
 fun main() {
-	val n = readLine()!!.toInt()
-	val P = LongArray(n + 1)
-	P[0] = 1
-	if (n >= 2) P[2] = 3
-	for (i in 4..n step 2) {
-		P[i] = P[i - 2] * 3
-		for (j in i - 4 downTo 0 step 2) {
-			P[i] += P[j] * 2
+	val MOD = 1000000000
+	val (n, k) = readLine()!!.split(" ").map { it.toInt() }
+
+	val P = Array(n + 1) {IntArray(k + 1)}
+
+	for (i in 0..n) {
+		P[i][1] = 1
+	}
+
+	for (j in 1 until k) {
+		for (i in 0..n) {
+			for (m in 0..n) {
+				if (i + m > n) break
+				P[i + m][j + 1] += P[i][j]
+				P[i + m][j + 1] %= MOD
+			}
 		}
 	}
-	println(P[n])
+	println(P[n][k])
 }
