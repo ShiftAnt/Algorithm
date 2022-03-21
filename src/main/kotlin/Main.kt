@@ -1,17 +1,39 @@
 import java.io.*
-import java.util.PriorityQueue
-
+const val MX = 2000000
+const val NO = "NO"
+const val YES = "YES"
 fun main() {
 	val br = BufferedReader(InputStreamReader(System.`in`))
-	val pq = PriorityQueue<Int>()
-	repeat(br.readLine().toInt()) {
-		pq.add(br.readLine().toInt())
+	val bw = BufferedWriter(OutputStreamWriter(System.out))
+	val pn = ArrayList<Long>()
+	val P = BooleanArray(MX + 1)
+	for (i in 2.. MX) {
+		if (!P[i]) {
+			pn.add(i.toLong())
+			for (j in i * 2..MX step i) {
+			P[j] = true
+			}
+		}
 	}
-	var ret = 0
-	while (pq.size > 1) {
-		val sub = pq.poll() + pq.poll()
-		ret += sub
-		pq.add(sub)
+	for (tc in 0 until br.readLine().toInt()) {
+		val s = br.readLine().split(" ").map { it.toLong() }.sum()
+		var ret = YES
+		if (s % 2 == 0L) {
+			if (s == 2L) ret = NO
+		} else {
+			if (s == 3L) ret = NO
+			else {
+				val sub = s - 2
+				for (p in pn) {
+					if (p * p > sub) break
+					if (sub % p == 0L) {
+						ret = NO
+						break
+					}
+				}
+			}
+		}
+		bw.write("$ret\n")
 	}
-	println(ret)
+	bw.flush()
 }
