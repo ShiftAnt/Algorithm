@@ -1,21 +1,37 @@
-const val INF = Int.MAX_VALUE
-fun main() {
-	val (n, k) = readLine()!!.split(" ").map { it.toInt() }
-	val P = Array(n) { readLine()!!.split(" ").map { it.toInt() } }
+import java.io.*
+import kotlin.math.*
 
-	val dp = Array(1.shl(n)) {IntArray(n) {INF} }
-	dp[1.shl(k)][k] = 0
+fun main() {
+	val br = BufferedReader(InputStreamReader(System.`in`))
+	val (n, p, k) = br.readLine().split(" ").map { it.toInt() }
+	val P = Array(n) {IntArray(k + 1) {Int.MAX_VALUE} }
+	val al = Array(n) {ArrayList<Pair<Int, Int>>()}
+	repeat(p) {
+		br.readLine().split(" ").map { it.toInt() }.let {
+			al[it[0] - 1].add(it[1] - 1 to it[2])
+			al[it[1] - 1].add(it[0] - 1 to it[2])
+		}
+	}
+	P[0][0] = 0
 	val que = ArrayDeque<Pair<Int, Int>>()
-	que.add(1.shl(k) to k)
+	que.add(0 to 0)
+
 	while (que.isNotEmpty()) {
 		val cur = que.removeFirst()
-		for (i in 0 until n) {
-			val nxtVstd = cur.first.or(1.shl(i))
-			if (dp[nxtVstd][i] > dp[cur.first][cur.second] + P[cur.second][i]) {
-				dp[nxtVstd][i] = dp[cur.first][cur.second] + P[cur.second][i]
-				que.add(nxtVstd to i)
+		for (nxt in al[cur.first]) {
+			val mx = max(P[cur.first][cur.second], nxt.second)
+			if (P[nxt.first][cur.second] > mx) {
+				P[nxt.first][cur.second] = mx
+				que.add(nxt.first to cur.second)
+			}
+			if (cur.second < k) {
+				if (P[nxt.first][cur.second + 1] > P[cur.first][cur.second]) {
+					P[nxt.first][cur.second + 1] = P[cur.first][cur.second]
+					que.add(nxt.first to cur.second + 1)
+				}
 			}
 		}
 	}
-	println(dp[1.shl(n) - 1].minOf { it })
+	val ret = P[n - 1].minOf { it }.let { if (it == Int.MAX_VALUE) -1 else it}
+	println(ret)
 }
