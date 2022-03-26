@@ -1,37 +1,30 @@
-import java.io.*
-import kotlin.math.*
-
 fun main() {
-	val br = BufferedReader(InputStreamReader(System.`in`))
-	val (n, p, k) = br.readLine().split(" ").map { it.toInt() }
-	val P = Array(n) {IntArray(k + 1) {Int.MAX_VALUE} }
-	val al = Array(n) {ArrayList<Pair<Int, Int>>()}
-	repeat(p) {
-		br.readLine().split(" ").map { it.toInt() }.let {
-			al[it[0] - 1].add(it[1] - 1 to it[2])
-			al[it[1] - 1].add(it[0] - 1 to it[2])
+	val n = readLine()!!.toInt()
+	val al = Array(n) {ArrayList<Int>()}
+	repeat(n - 1) {
+		readLine()!!.split(" ").map { it.toInt() - 1 }.let {
+			al[it[1]] += it[0]
 		}
 	}
-	P[0][0] = 0
-	val que = ArrayDeque<Pair<Int, Int>>()
-	que.add(0 to 0)
+	val vstd = BooleanArray(n)
+	fun dfs(idx: Int): Int {
+		var ret = 1
 
-	while (que.isNotEmpty()) {
-		val cur = que.removeFirst()
-		for (nxt in al[cur.first]) {
-			val mx = max(P[cur.first][cur.second], nxt.second)
-			if (P[nxt.first][cur.second] > mx) {
-				P[nxt.first][cur.second] = mx
-				que.add(nxt.first to cur.second)
-			}
-			if (cur.second < k) {
-				if (P[nxt.first][cur.second + 1] > P[cur.first][cur.second]) {
-					P[nxt.first][cur.second + 1] = P[cur.first][cur.second]
-					que.add(nxt.first to cur.second + 1)
-				}
+		for (nxt in al[idx]) {
+			if (!vstd[nxt]) {
+				vstd[nxt] = true
+				ret += dfs(nxt)
 			}
 		}
+		return ret
 	}
-	val ret = P[n - 1].minOf { it }.let { if (it == Int.MAX_VALUE) -1 else it}
+	var ret = -1
+	for (i in 0 until n) {
+		vstd.fill(false)
+		if (dfs(i) == n) {
+			ret = i + 1
+			break
+		}
+	}
 	println(ret)
 }
