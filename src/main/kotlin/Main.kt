@@ -1,30 +1,34 @@
-fun main() {
-	val n = readLine()!!.toInt()
-	val al = Array(n) {ArrayList<Int>()}
-	repeat(n - 1) {
-		readLine()!!.split(" ").map { it.toInt() - 1 }.let {
-			al[it[1]] += it[0]
-		}
-	}
-	val vstd = BooleanArray(n)
-	fun dfs(idx: Int): Int {
-		var ret = 1
+import java.util.StringTokenizer
+import kotlin.math.*
 
-		for (nxt in al[idx]) {
-			if (!vstd[nxt]) {
-				vstd[nxt] = true
-				ret += dfs(nxt)
-			}
-		}
-		return ret
+var n = 0
+var al = arrayOf<ArrayList<Int>>()
+var P = intArrayOf()
+fun dfs(idx: Int) {
+	if (al[idx].isEmpty()) return
+	for (nxt in al[idx]) {
+		dfs(nxt)
 	}
-	var ret = -1
-	for (i in 0 until n) {
-		vstd.fill(false)
-		if (dfs(i) == n) {
-			ret = i + 1
-			break
-		}
+	var mx = 0
+    val prev = ArrayList<Int>()
+	al[idx].forEach {prev.add(P[it])}
+    prev.sortDescending()
+
+    for (i in prev.indices) {
+        mx = max(i + 1 + prev[i], mx)
+    }
+    P[idx] = mx
+}
+
+fun main() {
+	n = readLine()!!.toInt()
+	val st = StringTokenizer(readLine())
+	st.nextToken()
+	al = Array(n) {ArrayList()}
+	P = IntArray(n)
+	for (i in 1 until n) {
+		al[st.nextToken().toInt()].add(i)
 	}
-	println(ret)
+	dfs(0)
+	println(P[0])
 }
