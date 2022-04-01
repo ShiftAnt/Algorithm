@@ -1,28 +1,41 @@
-class Trie(
-	val name: String = "",
-	val nxt: HashMap<String, Trie> = HashMap()
+import kotlin.math.*
+
+class Node(
+	val idx: Int,
+	var isFirst: Boolean = false,
+	var num: Long = 0,
 )
 
-fun hyphen(dept: Int) = StringBuilder().also { for (i in 0 until dept) it.append("--") }.toString()
-
-fun dfs(cur: Trie, dept: Int) {
-	if (dept != -1) {
-		println("${hyphen(dept)}${cur.name}")
-	}
-	cur.nxt.values.sortedBy { it.name }.forEach { nxt ->
-		dfs(nxt, dept + 1)
-	}
-}
-
 fun main() {
-	val root = Trie()
-	repeat(readLine()!!.toInt()) {
-		val st = java.util.StringTokenizer(readLine())
-		var cur = root
-		repeat(st.nextToken().toInt()) {
-			val str = st.nextToken()
-			cur = cur.nxt[str] ?: run { cur.nxt[str] = Trie(str); cur.nxt[str]!! }
+	val n = readLine()!!.toInt()
+	val strs = Array(n) { readLine()!! }
+	val P = Array(10) {Node(it)}
+
+	for (str in strs) {
+		for (i in str.length - 1 downTo 0) {
+			val idx = str[i] - 'A'
+			val cur = str.length - 1 - i
+			P[idx].num += 10.0.pow(cur).toLong()
+			if (i == 0) P[idx].isFirst = true
 		}
 	}
-	dfs(root, -1)
+	P.sortByDescending {it.num}
+
+	var ret = 0L
+	var total = 0
+	var notFirst = -1
+
+	for (i in P.indices) {
+		if (P[i].num != 0L) ++total
+		if (!P[i].isFirst) notFirst = i
+	}
+	if (total == 10) {
+		for (i in notFirst until P.size - 1) {
+			P[i] = P[i + 1].also { P[i + 1] = P[i] }
+		}
+	}
+	for (i in 0 until total) {
+		ret += P[i].num * (9 - i)
+	}
+	println(ret)
 }
