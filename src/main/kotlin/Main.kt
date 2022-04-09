@@ -1,30 +1,26 @@
-import java.io.*
+val ZERO = 0.toBigInteger()
+val ONE = 1.toBigInteger()
+val dr = arrayOf(0, 1)
+val dc = arrayOf(1, 0)
 fun main() {
-	val br = BufferedReader(InputStreamReader(System.`in`))
-	val s = br.readLine().toInt()
-	val (m, n) = br.readLine().split(" ").map { it.toInt() }
-	val A = arrayOf(IntArray(m) {br.readLine().toInt()}, IntArray(n) {br.readLine().toInt()})
+	val n = readLine()!!.toInt()
+	val P = Array(n) { readLine()!!.split(" ").map { it.toInt() } }
+	val dp = Array(n) {Array(n) { ZERO } }
+	dp[0][0] = ONE
 
-	val P = Array(2) {IntArray(s + 1)}
-	P[0][0] = 1
-	P[1][0] = 1
-	repeat(2) { tc ->
-		A[tc].sum().let { if (it <= s) ++P[tc][it] }
-		for (i in A[tc].indices) {
-			var cur = i
-			val end = if (i == 0) A[tc].size - 1 else i - 1
-			var num = 0
-			while (cur != end) {
-				num += A[tc][cur]
-				if (num > s) break
-				++P[tc][num]
-				if (++cur == A[tc].size) cur = 0
+	for (i in 0 until n) {
+		for (j in 0 until n) {
+			if (dp[i][j] != ZERO && P[i][j] != 0) {
+				for (k in dr.indices) {
+					val a = i + dr[k] * P[i][j]
+					val b = j + dc[k] * P[i][j]
+					if (a in 0 until n && b in 0 until n) {
+						dp[a][b] += dp[i][j]
+					}
+				}
 			}
 		}
 	}
-	var ret = 0L
-	for (i in 0..s) {
-		ret += P[0][i] * P[1][s - i]
-	}
-	println(ret)
+
+	println(dp[n - 1][n - 1])
 }
