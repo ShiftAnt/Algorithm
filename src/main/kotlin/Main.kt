@@ -1,62 +1,46 @@
-import java.io.*
-val dr = arrayOf(-1, 0, 0, 1)
-val dc = arrayOf(0, -1, 1, 0)
+import kotlin.math.max
+
 fun main() {
-	val br = BufferedReader(InputStreamReader(System.`in`))
-	val n = br.readLine().toInt()
-	val n2 = n * 2
-	val P = Array(n) {Array(n2) {0 to 0} }
-
-	var idx = 0
-	val loc = ArrayList<Array<Pair<Int, Int>>>()
-	repeat(n) {
-		var i = if (it % 2 == 0) 0 else 1
-
-		for (tc in 0 until if (it % 2 == 0) n else n - 1) {
-			val (a, b) = br.readLine().split(" ").map { it.toInt() }
-			P[it][i++] = a to idx
-			P[it][i++] = b to idx++
-			loc.add(arrayOf(it to i - 2, it to i - 1))
-		}
+	val n = readLine()!!.toInt()
+	val P = readLine()!!.split(" ").map { it.toInt() }
+	val al = Array(n) {ArrayList<Int>()}
+	repeat(n - 1) {
+		val (a, b) = readLine()!!.split(" ").map { it.toInt() - 1}
+		al[a] += b
+		al[b] += a
 	}
-	val que = ArrayDeque<Int>()
-	val vstd = BooleanArray(idx)
-	val prev = IntArray(idx) {-1}
-	que += 0
-	vstd[0] = true
-
-	while (que.isNotEmpty()) {
-		val ci = que.removeFirst()
-		val cur = loc[ci]
-		for (sub in cur) {
-			for (i in dr.indices) {
-				val y = sub.first + dr[i]
-				val x = sub.second + dc[i]
-				if (y in 0 until n && x in 0 until n2 && P[sub.first][sub.second].first == P[y][x].first) {
-					val nxt = P[y][x].second
-					if (vstd[nxt]) continue
-					prev[nxt] = ci
-					vstd[nxt] = true
-					que.add(nxt)
-				}
+	val vstd = BooleanArray(n)
+	val sub = Array(n) { 0 to 0 }
+	fun dfs(idx: Int): Pair<Int, Int> {
+		vstd[idx] = true
+		var exc = 0
+		var inc = P[idx]
+		for (nxt in al[idx]) {
+			if (vstd[nxt]) continue
+			dfs(nxt).let {
+				exc += max(it.first, it.second)
+				inc += it.first
 			}
 		}
+		sub[idx] = exc to inc
+		return exc to inc
 	}
-	var cur = 0
-	for (i in idx - 1 downTo 0) {
-		if (prev[i] != -1) {
-			cur = i
-			break
+	dfs(0).let {
+		println(max(it.first, it.second))
+	}
+	vstd.fill(false)
+	val ret = ArrayList<Int>()
+	fun indi(idx: Int, prev: Boolean = false) {
+		vstd[idx] = true
+		if (!prev && sub[idx].second  >= sub[idx].first) ret += idx + 1
+
+		for (nxt in al[idx]) {
+			if (vstd[nxt]) continue
+			if (!prev && sub[idx].second >= sub[idx].first) indi(nxt, true)
+			else indi(nxt, false)
 		}
 	}
-	val ret = ArrayList<Int>().also {
-		while (prev[cur] != -1) {
-			it += cur + 1
-			cur = prev[cur]
-		}
-		if (cur == 0) it += 1
-	}
-	ret.reverse()
-	println(ret.size)
+	indi(0, false)
+	ret.sort()
 	println(ret.joinToString(" "))
 }
