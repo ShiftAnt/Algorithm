@@ -1,33 +1,23 @@
 fun main() {
-	val (n, c) = readLine()!!.split(" ").map { it.toInt() }
-	val P = Array(n) { readLine()!!.toLong() }.sorted()
+	val n = readLine()!!.toInt()
+	val P = IntArray(n) { readLine()!!.toInt() - 1 }
 
-	var a = 1L
-	var b = P[n - 1] - P[0]
-	var ret = 0L
-	while (a <= b) {
-		val mid = (a + b) / 2
-		var prev = P[0]
-		var idx = 1
-		var isUp = true
-		loop@
-		for (tc in 0 until c - 2) {
-			if (idx == n - 1) {
-				isUp = false
-				break
-			}
-			while (P[idx] - prev < mid) if (++idx == n - 1) {
-				isUp = false
-				break@loop
-			}
-			prev = P[idx++]
+	val vstd = BooleanArray(n)
+	val ret = ArrayList<Int>()
+	for (i in 0 until n) {
+		val tmp = BooleanArray(n)
+		var cur = i
+		while (!tmp[cur]) {
+			tmp[cur] = true
+			cur = P[cur]
 		}
-		if (isUp && P[n - 1] - P[idx - 1] < mid) isUp = false
-
-		if (isUp) {
-			ret = mid
-			a = mid + 1
-		} else b = mid - 1
+		if (vstd[cur]) continue
+		while (!vstd[cur]) {
+			vstd[cur] = true
+			ret += cur
+			cur = P[cur]
+		}
 	}
-	println(ret)
+	println(ret.size)
+	println(ret.sorted().map { it + 1 }.joinToString ("\n"))
 }
