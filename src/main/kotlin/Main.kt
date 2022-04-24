@@ -1,35 +1,51 @@
 import java.io.*
 fun main() {
 	val br = BufferedReader(InputStreamReader(System.`in`))
-	val bw = BufferedWriter(OutputStreamWriter(System.out))
-	val lPq = java.util.PriorityQueue<Int>(compareByDescending { it })
-	val rPq = java.util.PriorityQueue<Int>()
+	val (m, n, l) = br.readLine().split(" ").map { it.toInt() }
 
-	for (tc in 0 until br.readLine().toInt()) {
-		val num = br.readLine().toInt()
-		val ls = lPq.size
-		val rs = rPq.size
-		if (lPq.isEmpty()) {
-			lPq += num
-		} else {
-			val lt = lPq.peek()
-			if (ls == rs) {
-				val rt = rPq.peek()
-				if (num <= rt) lPq += num
-				else {
-					lPq += rPq.poll()
-					rPq += num
-				}
+	val P = br.readLine().split(" ").map { it.toInt() }.sorted()
+
+	fun findMi(num: Int): Int {
+		if (num <= P[0]) return P[0]
+
+		var stt = 0
+		var end = P.size - 1
+		var ret = Int.MAX_VALUE
+		while (stt <= end) {
+			val mid = (stt + end) / 2
+			if (num <= P[mid]) {
+				ret = P[mid]
+				end = mid - 1
 			} else {
-				if (num >= lt) {
-					rPq += num
-				} else {
-					rPq += lPq.poll()
-					lPq += num
-				}
+				stt = mid + 1
 			}
 		}
-		bw.write("${lPq.peek()}\n")
+		return ret
 	}
-	bw.flush()
+	fun findMx(num: Int): Int {
+		if (P.last() <= num) return P.last()
+
+		var stt = 0
+		var end = P.size - 1
+		var ret = 0
+
+		while (stt <= end) {
+			val mid = (stt + end) / 2
+			if (P[mid] <= num) {
+				ret = P[mid]
+				stt = mid + 1
+			} else end = mid - 1
+		}
+		return ret
+	}
+	var ret = 0
+	for (tc in 0 until n) {
+		val (a, b) = br.readLine().split(" ").map { it.toInt() }
+		if (b > l) continue
+		val k = l - b
+		val f = findMi(a - k)
+		val t = findMx(a + k)
+		if (f <= t) ++ret
+	}
+	println(ret)
 }
