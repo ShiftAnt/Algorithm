@@ -1,17 +1,23 @@
-import java.io.*
-
 fun main() {
-	val br = BufferedReader(InputStreamReader(System.`in`))
-	val (m, n, l) = br.readLine().split(" ").map { it.toInt() }
-    val ts = java.util.TreeSet<Int>()
-	br.readLine().split(" ").map { it.toInt() }.forEach{ ts.add(it) }
+	val (n, m) = readLine()!!.split(" ").map { it.toInt() }
 
-	var ret = 0
-	for (tc in 0 until n) {
-		val (a, b) = br.readLine().split(" ").map { it.toInt() }
-		if (b > l) continue
-		val k = l - b
-		if ((ts.ceiling(a - k) ?: Int.MAX_VALUE) <= (ts.floor(a + k) ?: 0)) ++ret
+	val P = IntArray(n) { readLine()!!.toInt() }
+
+	var stt = 1L
+	var end = P.minOf { it }.toLong() * m
+	var ret = end
+	while (stt <= end) {
+		val mid = (stt + end) / 2
+
+		var sum = 0L
+
+		for (p in P) sum += mid / p
+		if (sum >= m) {
+			ret = mid
+			end = mid - 1
+		} else {
+			stt = mid + 1
+		}
 	}
 	println(ret)
 }
