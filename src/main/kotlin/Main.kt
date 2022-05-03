@@ -1,18 +1,31 @@
-fun main() {
+class Trie(
+	val nxt: Array<Trie?> = Array(10) {null},
+	var isEnd: Boolean = false
+)
+
+fun solution() {
+	var ret = "YES"
+	val root = Trie()
 	val n = readLine()!!.toInt()
-	val P = IntArray(n) { readLine()!!.toInt() }
-
-	val st = java.util.Stack<Pair<Int, Int>>()
-	var ret = 0L
-	for (i in n - 1 downTo 0) {
-		val cur = i to P[i]
-
-		while (st.isNotEmpty() && cur.second > st.peek().second) {
-			st.pop()
+	val P = Array(n) { readLine()!! }.sortedBy { it.length }
+	for (nums in P) {
+		var cur = root
+		if (ret == "NO") continue
+		for (j in nums.indices) {
+			val num = nums[j] - '0'
+			cur = cur.nxt[num] ?: Trie().also { cur.nxt[num] = it }
+			if (cur.isEnd) {
+				ret = "NO"
+				break
+			}
+			if (j == nums.lastIndex) cur.isEnd = true
 		}
-		ret += (if (st.isEmpty()) n else st.peek().first) - 1 - cur.first
-
-		st += cur
 	}
 	println(ret)
+}
+
+fun main() {
+	repeat(readLine()!!.toInt()) {
+		solution()
+	}
 }
