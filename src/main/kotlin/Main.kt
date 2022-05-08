@@ -1,17 +1,17 @@
+import java.io.*
+fun atob(num: Int, a: Int, b: Int) {
+	if (num == 1) {
+		bw.write("$a $b\n")
+		return
+	}
+	atob(num - 1, a, 6 - a - b)
+	bw.write("$a $b\n")
+	atob(num - 1, 6 - a - b, b)
+}
+val bw = BufferedWriter(OutputStreamWriter(System.out))
 fun main() {
 	val n = readLine()!!.toInt()
-	val st = java.util.StringTokenizer(readLine())
-	val P = IntArray(n) {st.nextToken().toInt()}
-
-	val ret = IntArray(n)
-	var sub = 0
-	while (P.sumOf { it } != 0) {
-		for (i in P.indices) {
-			if (P[i] != 0) {
-				++sub
-				if (--P[i] == 0) ret[i] = sub
-			}
-		}
-	}
-	println(ret.joinToString(" "))
+	bw.write("${1.shl(n) - 1}\n")
+	atob(n, 1, 3)
+	bw.flush()
 }
