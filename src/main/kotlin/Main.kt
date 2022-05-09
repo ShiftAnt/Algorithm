@@ -1,17 +1,20 @@
 import java.io.*
-fun atob(num: Int, a: Int, b: Int) {
-	if (num == 1) {
-		bw.write("$a $b\n")
-		return
-	}
-	atob(num - 1, a, 6 - a - b)
-	bw.write("$a $b\n")
-	atob(num - 1, 6 - a - b, b)
-}
-val bw = BufferedWriter(OutputStreamWriter(System.out))
+
 fun main() {
-	val n = readLine()!!.toInt()
-	bw.write("${1.shl(n) - 1}\n")
-	atob(n, 1, 3)
+	val br = BufferedReader(InputStreamReader(System.`in`))
+	val bw = BufferedWriter(OutputStreamWriter(System.out))
+	val (n, l) = br.readLine().split(" ").map { it.toInt() }
+	val st = java.util.StringTokenizer(br.readLine())
+	val deq = ArrayDeque<Pair<Int, Int>>()
+
+	for (i in 0 until n) {
+		val cur = st.nextToken().toInt()
+		if (deq.isNotEmpty() && deq.first().second <= i - l) deq.removeFirst()
+
+		while (deq.isNotEmpty() && deq.last().first > cur) deq.removeLast()
+
+		deq.addLast(cur to i)
+		bw.write("${deq.first().first} ")
+	}
 	bw.flush()
 }
