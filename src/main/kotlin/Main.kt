@@ -1,20 +1,18 @@
-import java.io.*
-
 fun main() {
-	val br = BufferedReader(InputStreamReader(System.`in`))
-	val bw = BufferedWriter(OutputStreamWriter(System.out))
-	val (n, l) = br.readLine().split(" ").map { it.toInt() }
-	val st = java.util.StringTokenizer(br.readLine())
-	val deq = ArrayDeque<Pair<Int, Int>>()
+	val (n, l) = readLine()!!.split(" ").map { it.toInt() }
 
-	for (i in 0 until n) {
-		val cur = st.nextToken().toInt()
-		if (deq.isNotEmpty() && deq.first().second <= i - l) deq.removeFirst()
-
-		while (deq.isNotEmpty() && deq.last().first > cur) deq.removeLast()
-
-		deq.addLast(cur to i)
-		bw.write("${deq.first().first} ")
+	for (i in l..100) {
+		val mid = n / i
+		val stt = mid - (i - 1) / 2
+		if (stt < 0) break
+		val end = stt + i - 1
+		val sub =  (stt + end) * i / 2
+		if (sub == n) {
+			for (ret in stt..end) {
+				print("$ret ")
+			}
+			return
+		}
 	}
-	bw.flush()
+	println(-1)
 }
