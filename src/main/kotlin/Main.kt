@@ -1,21 +1,32 @@
+import kotlin.math.*
+
+fun check(num: Int) = sqrt(num.toDouble()).toInt().let { it * it == num }
+
 fun main() {
-	val (n) = readLine()!!.split(" ").map { it.toInt() }
-
-	val P = readLine()!!.split(" ").map { it.toInt() }
-
-	val que = ArrayDeque<Int>()
-	repeat(n) {que += it + 1}
-	var ret = 0
-	for (p in P) {
-		for (r in que.indices) {
-			if (que[r] != p) continue
-			val l = que.size - r
-			val sub = if (l < r) l else r
-			for (i in 0 until sub) if (l < r) que.addFirst(que.removeLast()) else que.addLast(que.removeFirst())
-			ret += sub
-			break
+	val (n, m) = readLine()!!.split(" ").map { it.toInt() }
+	val P = Array(n) { readLine()!!.toCharArray().map { it - '0' } }
+	var ret = -1
+	fun move(r: Int, c: Int, a: Int, b: Int) {
+		var y = r
+		var x = c
+		var cur = 0
+		while (y in 0 until n && x in 0 until m) {
+			cur = cur * 10 + P[y][x]
+			if (check(cur)) ret = max(ret, cur)
+			if (a == 0 && b == 0) return
+			y += a
+			x += b
 		}
-		que.removeFirst()
+	}
+
+	for (i in 0 until n) {
+		for (j in 0 until m) {
+			for (a in -n + 1 until n) {
+				for (b in -m + 1 until m) {
+					move(i, j, a, b)
+				}
+			}
+		}
 	}
 	println(ret)
 }
