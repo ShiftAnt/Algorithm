@@ -1,32 +1,39 @@
-import kotlin.math.*
-
-fun check(num: Int) = sqrt(num.toDouble()).toInt().let { it * it == num }
+class Fraction(
+	val a: Int,
+	val b: Int
+) {
+	operator fun compareTo(other: Fraction) =
+		(this.a.toLong() * other.b - other.a.toLong() * this.b).let {
+			if (it > 0) 1 else if (it < 0) -1 else 0
+		}
+}
 
 fun main() {
-	val (n, m) = readLine()!!.split(" ").map { it.toInt() }
-	val P = Array(n) { readLine()!!.toCharArray().map { it - '0' } }
-	var ret = -1
-	fun move(r: Int, c: Int, a: Int, b: Int) {
-		var y = r
-		var x = c
-		var cur = 0
-		while (y in 0 until n && x in 0 until m) {
-			cur = cur * 10 + P[y][x]
-			if (check(cur)) ret = max(ret, cur)
-			if (a == 0 && b == 0) return
-			y += a
-			x += b
-		}
-	}
+	val n = readLine()!!.toInt()
 
+	val P = readLine()!!.split(" ").map { it.toInt() }
+	val ret = IntArray(n)
 	for (i in 0 until n) {
-		for (j in 0 until m) {
-			for (a in -n + 1 until n) {
-				for (b in -m + 1 until m) {
-					move(i, j, a, b)
-				}
+		var mx = Fraction(0, 0)
+		for (r in i + 1 until n) {
+			val cur = Fraction(P[r] - P[i], r - i)
+			mx = if (r == i + 1) {
+				cur
+			} else if (cur > mx) cur
+			else continue
+			if (cur.a > 0) {
+				++ret[i]
+				++ret[r]
+			}
+		}
+		for (l in i - 1 downTo 0) {
+			val cur = Fraction(P[l] - P[i], i - l)
+			mx = if (l == i - 1) cur else if (cur > mx) cur else continue
+			if (cur.a >= 0) {
+				++ret[i]
+				++ret[l]
 			}
 		}
 	}
-	println(ret)
+	println(ret.maxOf { it })
 }
