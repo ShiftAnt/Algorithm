@@ -1,11 +1,36 @@
-fun main() {
-	val n = readLine()!!.toInt()
-	val AB = Array(2) { readLine()!!.split(" ").map { it.toInt() }.toIntArray() }
-	AB[0].sort()
-	AB[1].sortDescending()
-	var ret = 0
-	repeat(n) {
-		ret += AB[0][it] * AB[1][it]
+fun ArrayDeque<Int>.toNum(): String {
+	val ret = StringBuilder()
+	for (ele in this) {
+		ret.append(ele)
 	}
-	println(ret)
+	return ret.toString()
+}
+
+fun main() {
+	var n = readLine()!!.toInt()
+	val num = ArrayDeque<Int>()
+	num += 0
+
+	while (n-- != 0) {
+		val siz = num.size
+		var idx = 0
+		for (i in siz - 2 downTo 0) {
+			if (num[i] - num[i + 1] != 1) {
+				idx = i + 1
+				break
+			}
+		}
+		if (idx == 0 && num[idx] == 9) {
+			if (num.size >= 10) {
+				println("-1")
+				return
+			}
+			num.addFirst(num.size)
+		}
+		else ++num[idx]
+		for (i in num.size - 1 downTo idx + 1) {
+			num[i] = num.size - 1 - i
+		}
+	}
+	println(num.toNum())
 }
