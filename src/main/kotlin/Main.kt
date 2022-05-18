@@ -1,20 +1,19 @@
+import kotlin.math.*
+
 fun main() {
-	val n = readLine()!!.toInt()
+	val (n, m) = readLine()!!.split(" ").map { it.toInt() }
+	val P = Array(m) { readLine()!!.split(" ").map {it.toInt()} }
+	val sub = intArrayOf(n % 6, 6)
+	val mi = intArrayOf(P[0][0], P[0][0])
 
-	val P = Array(n) { readLine()!! }
-
-	val ret = StringBuilder()
-
-	loop@
-	for (i in P[0].indices) {
-		val char = P[0][i]
-		for (j in 1 until n) {
-			if (char != P[j][i]) {
-				ret.append("?")
-				continue@loop
-			}
+	for (i in 0 until m) {
+		for (j in sub.indices) {
+			mi[j] = min(mi[j], P[i][0])
+			mi[j] = min(mi[j], P[i][1] * sub[j])
 		}
-		ret.append(char)
 	}
+	var ret = 0
+	if (sub[0] != 0) ret += mi[0]
+	ret += n / 6 * mi[1]
 	println(ret)
 }
