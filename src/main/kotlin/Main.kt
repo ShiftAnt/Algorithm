@@ -1,19 +1,33 @@
-import kotlin.math.*
-
 fun main() {
-	val (n, m) = readLine()!!.split(" ").map { it.toInt() }
-	val P = Array(m) { readLine()!!.split(" ").map {it.toInt()} }
-	val sub = intArrayOf(n % 6, 6)
-	val mi = intArrayOf(P[0][0], P[0][0])
-
-	for (i in 0 until m) {
-		for (j in sub.indices) {
-			mi[j] = min(mi[j], P[i][0])
-			mi[j] = min(mi[j], P[i][1] * sub[j])
+	val st = java.util.StringTokenizer(readLine())
+	val (s, n, k) = Array(3) {st.nextToken().toInt()}
+	val (r1, r2, c1, c2) = Array(4) {st.nextToken().toInt()}
+	val ret = StringBuilder()
+	for (i in r1..r2) {
+		loop@
+		for (j in c1..c2) {
+			var y = i
+			var x = j
+			val fp = ArrayList<Pair<Int, Int>>()
+			fp += y to x
+			for (k in 0 until s) {
+				y /= n
+				x /= n
+				fp += y to x
+			}
+			fp.reverse()
+			val idx = (n - k) / 2
+			for (p in 1 until fp.size) {
+				val cy = fp[p].first - fp[p - 1].first * n
+				val cx = fp[p].second - fp[p - 1].second * n
+				if (cy in idx until idx + k && cx in idx until idx + k) {
+					ret.append("1")
+					continue@loop
+				}
+			}
+			ret.append("0")
 		}
+		ret.append("\n")
 	}
-	var ret = 0
-	if (sub[0] != 0) ret += mi[0]
-	ret += n / 6 * mi[1]
 	println(ret)
 }
