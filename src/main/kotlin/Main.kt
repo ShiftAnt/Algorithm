@@ -1,33 +1,56 @@
+fun gcf(a: Long, b: Long): Long {
+	if (b == 0L) return a
+	return gcf(b, a % b)
+}
+fun lcf(a: Long, b: Long) = a / gcf(a, b) * b
+
+class Node(
+	var a: Long = 0,
+	var b: Long = 0
+)
+
 fun main() {
-	val st = java.util.StringTokenizer(readLine())
-	val (s, n, k) = Array(3) {st.nextToken().toInt()}
-	val (r1, r2, c1, c2) = Array(4) {st.nextToken().toInt()}
-	val ret = StringBuilder()
-	for (i in r1..r2) {
-		loop@
-		for (j in c1..c2) {
-			var y = i
-			var x = j
-			val fp = ArrayList<Pair<Int, Int>>()
-			fp += y to x
-			for (k in 0 until s) {
-				y /= n
-				x /= n
-				fp += y to x
-			}
-			fp.reverse()
-			val idx = (n - k) / 2
-			for (p in 1 until fp.size) {
-				val cy = fp[p].first - fp[p - 1].first * n
-				val cx = fp[p].second - fp[p - 1].second * n
-				if (cy in idx until idx + k && cx in idx until idx + k) {
-					ret.append("1")
-					continue@loop
-				}
-			}
-			ret.append("0")
+	val n = readLine()!!.toInt()
+
+	val al = Array(n) {ArrayList<Triple<Int, Int, Int>>()}
+
+	repeat(n - 1) {
+		readLine()!!.split(" ").map { it.toInt() }.let {
+			al[it[0]] += Triple(it[1], it[2], it[3])
+			al[it[1]] += Triple(it[0], it[3], it[2])
 		}
-		ret.append("\n")
 	}
-	println(ret)
+	val vstd = BooleanArray(n)
+
+	val nodes = Array(n) {Node()}
+	nodes[0].a = 1
+	nodes[0].b = 1
+
+	fun dfs(idx: Int) {
+		vstd[idx] = true
+		val cur = al[idx]
+
+		for (nxt in cur) {
+			if (vstd[nxt.first]) continue
+			nodes[nxt.first].a = nodes[idx].a * nxt.third
+			nodes[nxt.first].b = nodes[idx].b * nxt.second
+			dfs(nxt.first)
+		}
+	}
+	dfs(0)
+	var lcf = nodes[0].b
+	for (i in 0 until n) {
+		lcf = lcf(lcf, nodes[i].b)
+	}
+	for (i in 0 until n) {
+		nodes[i].a = lcf / nodes[i].b * nodes[i].a
+		nodes[i].b = 1
+	}
+	var gcf = nodes[0].a
+	for (i in 1 until n) {
+		gcf = gcf(gcf, nodes[i].a)
+	}
+	for (i in 0 until n) {
+		print("${nodes[i].a / gcf} ")
+	}
 }
