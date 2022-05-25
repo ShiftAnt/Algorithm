@@ -1,30 +1,24 @@
 fun main() {
 	val n = readLine()!!.toInt()
-	var stt = -1
-
-	val P = readLine()!!.split(" ").map { it.toInt() }
-
-	val al = Array(n) { ArrayList<Int>() }
-
+	val P = Array(n) { readLine()!! }.sortedByDescending { it.length }
+	val hs = ArrayList<HashSet<String>>()
 	repeat(n) {
-		if (P[it] == -1) stt = it
-		else al[P[it]] += it
-	}
-	val vstd = BooleanArray(n)
-	var ret = 0
-	val except = readLine()!!.toInt()
-	fun dfs(idx: Int): Int {
-		vstd[idx] = true
-		if (idx == except) return 0
-		var child = 1
-
-		for (nxt in al[idx]) {
-			if (vstd[nxt]) continue
-			child += dfs(nxt)
+		val cur = P[it]
+		var sum = 0
+		for (h in hs) {
+			var isIn = false
+			for (k in h) {
+				if (k.startsWith(cur)) {
+					isIn = true
+					break
+				}
+			}
+			if (isIn) {
+				++sum
+				h.add(cur)
+			}
 		}
-		if (child == 1) ++ret
-		return child
+		if (sum == 0) hs += hashSetOf(cur)
 	}
-	dfs(stt)
-	println(ret)
+	println(hs.size)
 }
