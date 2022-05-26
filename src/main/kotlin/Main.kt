@@ -1,24 +1,16 @@
 fun main() {
-	val n = readLine()!!.toInt()
-	val P = Array(n) { readLine()!! }.sortedByDescending { it.length }
-	val hs = ArrayList<HashSet<String>>()
-	repeat(n) {
-		val cur = P[it]
-		var sum = 0
-		for (h in hs) {
-			var isIn = false
-			for (k in h) {
-				if (k.startsWith(cur)) {
-					isIn = true
-					break
-				}
-			}
-			if (isIn) {
-				++sum
-				h.add(cur)
-			}
-		}
-		if (sum == 0) hs += hashSetOf(cur)
+	val (a, b) = readLine()!!.split(" ")
+	val stt = StringBuilder()
+	repeat(b.length - a.length) {
+		stt.append("0")
 	}
-	println(hs.size)
+	stt.append(a)
+	var ret = 0
+	for (i in b.indices) {
+		if (stt[i] == b[i]) {
+			if (b[i] == '8') ++ret
+		}
+		else break
+	}
+	println(ret)
 }
